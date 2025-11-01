@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "dzVZlYYaSl4=",
+  "success": true,
+  "projectFilePath": "/Users/nigermann/Desktop/Projektarbeit/Projektarbeit.csproj",
+  "expectedPackageFiles": [
+    "/Users/nigermann/.nuget/packages/mqttnet/5.0.1.1416/mqttnet.5.0.1.1416.nupkg.sha512"
+  ],
+  "logs": []
+}
