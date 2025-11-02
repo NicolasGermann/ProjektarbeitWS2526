@@ -8,15 +8,15 @@ namespace HTW.XmlReaderExtention
         public static PrinterDTO LoadXml(this PrinterDTO pr, string xmlPath)
         {
             var _doc = XDocument.Load(xmlPath);
-            var printer = _doc.Descendants("Printer").First();
+            var printer = _doc.Descendants("Printer").FirstOrDefault(T=>(string?)T.Element("Name") == pr.Name);
             return new PrinterDTO
             {
-                Name = (string?)printer.Element("Name") ?? "",
-                Host = (string?)printer.Element("Host") ?? "",
-                ID = (string?)printer.Element("ID") ?? "",
-                Port = (int?)printer.Element("Port") ?? 0,
-                Username = (string?)printer.Element("Username") ?? "",
-                Password = (string?)printer.Element("Password") ?? ""
+                Name = (string?)printer?.Element("Name") ?? "",
+                Host = (string?)printer?.Element("Host") ?? "",
+                ID = (string?)printer?.Element("ID") ?? "",
+                Port = (int?)printer?.Element("Port") ?? 0,
+                Username = (string?)printer?.Element("Username") ?? "",
+                Password = (string?)printer?.Element("Password") ?? ""
             };
         }
 

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Printers>
+	<Printer>
+	    <Name>Drucker1</Name>
+	    <Host>127.0.0.1</Host>
+	    <ID>DRUCKER</ID>
+	    <Port>1883</Port>
+	    <Username></Username>
+	    <Password></Password>
+	</Printer>
+
+	<Printer>
+	    <Name>Drucker2</Name>
+	    <Host>127.0.0.1</Host>
+	    <ID>DRUCKER2</ID>
+	    <Port>1883</Port>
+	    <Username></Username>
+	    <Password></Password>
+	</Printer>
+</Printers>
