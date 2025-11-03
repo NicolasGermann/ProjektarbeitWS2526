@@ -1,0 +1,111 @@
+{
+  "nodes": {
+    "dev_flake": {
+      "inputs": {
+        "helix-config": "helix-config",
+        "nixpkgs": "nixpkgs",
+        "nvim-config": "nvim-config",
+        "zellij-config": "zellij-config"
+      },
+      "locked": {
+        "lastModified": 1762081263,
+        "narHash": "sha256-doy9SBe0SS/dGpWRAmBZlzTsKGpUzpLyCr2GBMZHLHA=",
+        "owner": "nicolasgermann",
+        "repo": "dev_flake",
+        "rev": "4f86e8bae1c3ceea6550d41b3c4e078c90dc82f8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nicolasgermann",
+        "repo": "dev_flake",
+        "type": "github"
+      }
+    },
+    "helix-config": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1758892955,
+        "narHash": "sha256-CkevNUdNguWieHnm6ZJhAlZ3Nt2SnUjl3fbBNx5VELc=",
+        "owner": "nicolasgermann",
+        "repo": "helix_config",
+        "rev": "5463c9c3e88735d7b4eec13fdcfde3f19cb2681b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nicolasgermann",
+        "repo": "helix_config",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1762021031,
+        "narHash": "sha256-tuCqcFzPzJd8jSjH9QTIor7XgrUYF8gpuQgo9ACikrg=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "3f40c4f8c496308680d71d9e17bce452928a2e17",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1762092764,
+        "narHash": "sha256-ICNAddgYHOtYfKE5gLXihh/nKPJOpN3scG4njJKvdAc=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "27e25b10ac27a490f742199113de5e8134fa17a5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nvim-config": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1762020116,
+        "narHash": "sha256-BV0VzPQ3YzByd4XN6PN4wNmspqVrrfvyPQ9fQ25cfA4=",
+        "owner": "nicolasgermann",
+        "repo": "nvim_config",
+        "rev": "52d3dfe13e9926e5697ffe2baca29b613d4adfa8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nicolasgermann",
+        "repo": "nvim_config",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "dev_flake": "dev_flake",
+        "nixpkgs": "nixpkgs_2"
+      }
+    },
+    "zellij-config": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1761164948,
+        "narHash": "sha256-lt8yb4zeNZv602SKz1OiCDOmCSeen4jRrMX8rmDoKRI=",
+        "owner": "nicolasgermann",
+        "repo": "zellij_config",
+        "rev": "20a629808dfb14599e20c6d101511def7697297e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nicolasgermann",
+        "repo": "zellij_config",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
