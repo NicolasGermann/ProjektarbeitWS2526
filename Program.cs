@@ -2,6 +2,8 @@
 using HTW.XmlReaderExtention;
 using System.Text;
 using MQTTnet;
+using HTW.Influx.Extention;
+using HTW.Influx.Database;
 
 class Program
 {
@@ -15,9 +17,13 @@ class Program
             return Task.CompletedTask;
         };
 
+        foreach (var a in XmlIterator.GetXmlPrinters("testdata.xml"))
+        {
+            PrinterFactory.CreatePrinter((string?)a.Element("Name") ?? "").FillFromXml(a).SetMessageFunctionDefault().ConnectToBroker().ConnectToDatabase(new InfluxDB("http://localhost:8181","","bydb"));
+        }
 
-        PrinterFactory.CreatePrinter("Drucker1").LoadXml("testdata.xml").ConnectToBroker(printToConsole);
-        PrinterFactory.CreatePrinter("Drucker2").LoadXml("testdata.xml").ConnectToBroker(printToConsole);
+
         while (true) { }
+
     }
 }

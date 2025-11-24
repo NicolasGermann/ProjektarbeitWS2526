@@ -1,0 +1,73 @@
+version: '3.8'
+
+# Docker Compose-Konfiguration für InfluxDB 3 Core mit Web UI
+# Basiert auf influxdb:3-core und influxdb3-explorer
+
+networks:
+  influxdb3:
+    name: influxdb3
+    driver: bridge
+
+volumes:
+  influxdb3-data:
+    driver: local
+
+services:
+  # InfluxDB 3 Core Datenbank
+  influxdb3:
+    image: influxdb:3-core
+    container_name: influxdb3
+    hostname: influxdb3
+    restart: unless-stopped
+
+    command: >
+      influxdb3 serve
+      --object-store file
+      --data-dir /var/lib/influxdb3
+      --node-id node0
+      --without-auth
+
+    ports:
+      - "8181:8181"  # InfluxDB 3 Core HTTP API Port
+
+    # Netzwerk-Konfiguration
+    networks:
+      - influxdb3
+
+    # Volumes für persistente Datenspeicherung
+    volumes:
+      - influxdb3-data:/var/lib/influxdb3
+      # Alternativ: lokales Verzeichnis verwenden
+      # - ./data:/var/lib/influxdb3
+
+    # Umgebungsvariablen für InfluxDB 3 Core
+    environment:
+      # Node-Identifier (eindeutig pro Host/Container)
+      INFLUXDB3_NODE_IDENTIFIER_PREFIX: "node0"
+
+      # Object Store Konfiguration
+      # Optionen: memory, memory-throttled, file, s3, google, azure
+      INFLUXDB3_OBJECT_STORE: "file"
+
+      # Data Directory für File-basierte Speicherung
+      INFLUXDB3_DB_DIR: "/var/lib/influxdb3"
+
+      # Optional: Logging-Level
+      # LOG_FILTER: "info"
+
+      # Optional: S3/Cloud Object Store Konfiguration
+      # Für S3:
+      # INFLUXDB3_OBJECT_STORE: "s3"
+      # INFLUXDB3_BUCKET: "your-bucket-name"
+      # AWS_ACCESS_KEY_ID: "your-access-key"
+      # AWS_SECRET_ACCESS_KEY: "your-secret-key"
+      # AWS_DEFAULT_REGION: "us-east-1"
+
+      # Für Azure:
+      # INFLUXDB3_OBJECT_STORE: "azure"
+      # INFLUXDB3_BUCKET: "your-container-name"
+      # AZURE_STORAGE_ACCOUNT: "your-storage-account"
+      # AZURE_STORAGE_ACCESS_KEY: "your-access-key"
+    healthcheck:
+      disable: true
+

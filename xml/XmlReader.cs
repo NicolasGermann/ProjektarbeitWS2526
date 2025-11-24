@@ -5,10 +5,7 @@ namespace HTW.XmlReaderExtention
 {
     public static class XmlReaderExtention
     {
-        public static PrinterDTO LoadXml(this PrinterDTO pr, string xmlPath)
-        {
-            var _doc = XDocument.Load(xmlPath);
-            var printer = _doc.Descendants("Printer").FirstOrDefault(T=>(string?)T.Element("Name") == pr.Name);
+	public static PrinterDTO FillFromXml(this PrinterDTO pr, XElement printer){
             return new PrinterDTO
             {
                 Name = (string?)printer?.Element("Name") ?? "",
@@ -18,8 +15,18 @@ namespace HTW.XmlReaderExtention
                 Username = (string?)printer?.Element("Username") ?? "",
                 Password = (string?)printer?.Element("Password") ?? ""
             };
-        }
 
+	}
+
+    }
+
+    public static class XmlIterator
+    {
+        public static IEnumerable<XElement> GetXmlPrinters(string xmlPath)
+        {
+            var _doc = XDocument.Load(xmlPath);
+            return _doc.Descendants("Printer");
+        }
     }
 
 }
