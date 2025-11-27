@@ -2,7 +2,7 @@
 <Printers>
 	<Printer>
 	    <Name>Drucker1</Name>
-	    <Host>127.0.0.1</Host>
+	    <Host>host.docker.internal</Host>
 	    <ID>DRUCKER</ID>
 	    <Port>1883</Port>
 	    <Username></Username>

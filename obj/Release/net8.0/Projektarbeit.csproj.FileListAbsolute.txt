@@ -1,0 +1,17 @@
+/Users/nigermann/Desktop/Projektarbeit/bin/Release/net8.0/Projektarbeit
+/Users/nigermann/Desktop/Projektarbeit/bin/Release/net8.0/Projektarbeit.deps.json
+/Users/nigermann/Desktop/Projektarbeit/bin/Release/net8.0/Projektarbeit.runtimeconfig.json
+/Users/nigermann/Desktop/Projektarbeit/bin/Release/net8.0/Projektarbeit.dll
+/Users/nigermann/Desktop/Projektarbeit/bin/Release/net8.0/Projektarbeit.pdb
+/Users/nigermann/Desktop/Projektarbeit/bin/Release/net8.0/MQTTnet.dll
+/Users/nigermann/Desktop/Projektarbeit/obj/Release/net8.0/Projektarbeit.csproj.AssemblyReference.cache
+/Users/nigermann/Desktop/Projektarbeit/obj/Release/net8.0/Projektarbeit.GeneratedMSBuildEditorConfig.editorconfig
+/Users/nigermann/Desktop/Projektarbeit/obj/Release/net8.0/Projektarbeit.AssemblyInfoInputs.cache
+/Users/nigermann/Desktop/Projektarbeit/obj/Release/net8.0/Projektarbeit.AssemblyInfo.cs
+/Users/nigermann/Desktop/Projektarbeit/obj/Release/net8.0/Projektarbeit.csproj.CoreCompileInputs.cache
+/Users/nigermann/Desktop/Projektarbeit/obj/Release/net8.0/Projekta.036B7DD3.Up2Date
+/Users/nigermann/Desktop/Projektarbeit/obj/Release/net8.0/Projektarbeit.dll
+/Users/nigermann/Desktop/Projektarbeit/obj/Release/net8.0/refint/Projektarbeit.dll
+/Users/nigermann/Desktop/Projektarbeit/obj/Release/net8.0/Projektarbeit.pdb
+/Users/nigermann/Desktop/Projektarbeit/obj/Release/net8.0/Projektarbeit.genruntimeconfig.cache
+/Users/nigermann/Desktop/Projektarbeit/obj/Release/net8.0/ref/Projektarbeit.dll

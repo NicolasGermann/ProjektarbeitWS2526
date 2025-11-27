@@ -15,3 +15,11 @@
 /Users/nigermann/Desktop/Projektarbeit/obj/Debug/net8.0/Projektarbeit.pdb
 /Users/nigermann/Desktop/Projektarbeit/obj/Debug/net8.0/Projektarbeit.genruntimeconfig.cache
 /Users/nigermann/Desktop/Projektarbeit/obj/Debug/net8.0/ref/Projektarbeit.dll
+/Users/nigermann/Desktop/Projektarbeit/bin/Debug/net8.0/Apache.Arrow.dll
+/Users/nigermann/Desktop/Projektarbeit/bin/Debug/net8.0/Apache.Arrow.Flight.dll
+/Users/nigermann/Desktop/Projektarbeit/bin/Debug/net8.0/Google.Protobuf.dll
+/Users/nigermann/Desktop/Projektarbeit/bin/Debug/net8.0/Grpc.Core.Api.dll
+/Users/nigermann/Desktop/Projektarbeit/bin/Debug/net8.0/Grpc.Net.Client.dll
+/Users/nigermann/Desktop/Projektarbeit/bin/Debug/net8.0/Grpc.Net.Common.dll
+/Users/nigermann/Desktop/Projektarbeit/bin/Debug/net8.0/InfluxDB3.Client.dll
+/Users/nigermann/Desktop/Projektarbeit/bin/Debug/net8.0/Microsoft.Extensions.Logging.Abstractions.dll

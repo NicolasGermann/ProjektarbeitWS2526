@@ -11,15 +11,20 @@ class Program
 
     static void Main()
     {
+
+        string host = Environment.GetEnvironmentVariable("DBHOST") ?? string.Empty;
+        string token =  Environment.GetEnvironmentVariable("DBTOKEN") ?? string.Empty;
+        string database =  Environment.GetEnvironmentVariable("DBNAME") ?? string.Empty;
+        
         Func<MqttApplicationMessageReceivedEventArgs, Task> printToConsole = t =>
         {
             Console.Write(String.Format("Message: {0}", Encoding.UTF8.GetString(t.ApplicationMessage.Payload)));
             return Task.CompletedTask;
         };
 
-        foreach (var a in XmlIterator.GetXmlPrinters("testdata.xml"))
+        foreach (var a in XmlIterator.GetXmlPrinters("/xml/testdata.xml"))
         {
-            PrinterFactory.CreatePrinter((string?)a.Element("Name") ?? "").FillFromXml(a).SetMessageFunctionDefault().ConnectToBroker().ConnectToDatabase(new InfluxDB("http://localhost:8181","","bydb"));
+            PrinterFactory.CreatePrinter((string?)a.Element("Name") ?? "").FillFromXml(a).SetMessageFunctionDefault().ConnectToBroker().ConnectToDatabase(new InfluxDB(host,token,database));
         }
 
 

@@ -13,6 +13,23 @@ volumes:
     driver: local
 
 services:
+
+  program:
+    build: . 
+
+    networks:
+      - influxdb3
+      - default
+
+    volumes:
+      - ./xmldata:/xml
+
+    environment:
+      DBHOST: http://influxdb3:8181
+      DBTOKEN:
+      DBNAME: bydb
+
+      
   # InfluxDB 3 Core Datenbank
   influxdb3:
     image: influxdb:3-core
@@ -27,8 +44,8 @@ services:
       --node-id node0
       --without-auth
 
-    ports:
-      - "8181:8181"  # InfluxDB 3 Core HTTP API Port
+    # ports:
+    #   - "8181:8181"  # InfluxDB 3 Core HTTP API Port
 
     # Netzwerk-Konfiguration
     networks:

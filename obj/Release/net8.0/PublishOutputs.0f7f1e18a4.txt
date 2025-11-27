@@ -1,0 +1,6 @@
+/Users/nigermann/Desktop/Projektarbeit/bin/Release/net8.0/publish/Projektarbeit
+/Users/nigermann/Desktop/Projektarbeit/bin/Release/net8.0/publish/Projektarbeit.dll
+/Users/nigermann/Desktop/Projektarbeit/bin/Release/net8.0/publish/Projektarbeit.deps.json
+/Users/nigermann/Desktop/Projektarbeit/bin/Release/net8.0/publish/Projektarbeit.runtimeconfig.json
+/Users/nigermann/Desktop/Projektarbeit/bin/Release/net8.0/publish/Projektarbeit.pdb
+/Users/nigermann/Desktop/Projektarbeit/bin/Release/net8.0/publish/MQTTnet.dll

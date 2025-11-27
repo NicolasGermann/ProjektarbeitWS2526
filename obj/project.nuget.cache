@@ -1,10 +1,25 @@
 {
   "version": 2,
-  "dgSpecHash": "dzVZlYYaSl4=",
+  "dgSpecHash": "Gu039Qj4UnU=",
   "success": true,
   "projectFilePath": "/Users/nigermann/Desktop/Projektarbeit/Projektarbeit.csproj",
   "expectedPackageFiles": [
-    "/Users/nigermann/.nuget/packages/mqttnet/5.0.1.1416/mqttnet.5.0.1.1416.nupkg.sha512"
+    "/Users/nigermann/.nuget/packages/apache.arrow/21.0.0/apache.arrow.21.0.0.nupkg.sha512",
+    "/Users/nigermann/.nuget/packages/apache.arrow.flight/21.0.0/apache.arrow.flight.21.0.0.nupkg.sha512",
+    "/Users/nigermann/.nuget/packages/google.protobuf/3.31.1/google.protobuf.3.31.1.nupkg.sha512",
+    "/Users/nigermann/.nuget/packages/grpc.core.api/2.65.0/grpc.core.api.2.65.0.nupkg.sha512",
+    "/Users/nigermann/.nuget/packages/grpc.net.client/2.65.0/grpc.net.client.2.65.0.nupkg.sha512",
+    "/Users/nigermann/.nuget/packages/grpc.net.common/2.65.0/grpc.net.common.2.65.0.nupkg.sha512",
+    "/Users/nigermann/.nuget/packages/influxdb3.client/1.4.0/influxdb3.client.1.4.0.nupkg.sha512",
+    "/Users/nigermann/.nuget/packages/microsoft.extensions.logging.abstractions/6.0.0/microsoft.extensions.logging.abstractions.6.0.0.nupkg.sha512",
+    "/Users/nigermann/.nuget/packages/microsoft.net.illink.tasks/8.0.21/microsoft.net.illink.tasks.8.0.21.nupkg.sha512",
+    "/Users/nigermann/.nuget/packages/mqttnet/5.0.1.1416/mqttnet.5.0.1.1416.nupkg.sha512",
+    "/Users/nigermann/.nuget/packages/system.memory/4.6.0/system.memory.4.6.0.nupkg.sha512",
+    "/Users/nigermann/.nuget/packages/microsoft.netcore.app.runtime.linux-x64/8.0.21/microsoft.netcore.app.runtime.linux-x64.8.0.21.nupkg.sha512",
+    "/Users/nigermann/.nuget/packages/microsoft.netcore.app.runtime.osx-arm64/8.0.21/microsoft.netcore.app.runtime.osx-arm64.8.0.21.nupkg.sha512",
+    "/Users/nigermann/.nuget/packages/microsoft.aspnetcore.app.runtime.linux-x64/8.0.21/microsoft.aspnetcore.app.runtime.linux-x64.8.0.21.nupkg.sha512",
+    "/Users/nigermann/.nuget/packages/microsoft.aspnetcore.app.runtime.osx-arm64/8.0.21/microsoft.aspnetcore.app.runtime.osx-arm64.8.0.21.nupkg.sha512",
+    "/Users/nigermann/.nuget/packages/microsoft.netcore.app.host.linux-x64/8.0.21/microsoft.netcore.app.host.linux-x64.8.0.21.nupkg.sha512"
   ],
   "logs": []
 }

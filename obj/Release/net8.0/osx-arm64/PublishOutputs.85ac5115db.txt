@@ -1,0 +1,2 @@
+/Users/nigermann/Desktop/Projektarbeit/bin/Release/net8.0/osx-arm64/publish/Projektarbeit.pdb
+/Users/nigermann/Desktop/Projektarbeit/bin/Release/net8.0/osx-arm64/publish/Projektarbeit

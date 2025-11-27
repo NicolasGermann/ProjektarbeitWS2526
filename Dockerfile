@@ -8,11 +8,12 @@ WORKDIR /wordir
 
 RUN dotnet publish --sc true -o '/out'
 
-
 FROM mcr.microsoft.com/dotnet/runtime:8.0 AS run
 
 COPY --from=build /out/. /run 
-COPY ./testdata.xml /run
+# COPY ./xmldata/testdata.xml /xml
+
+RUN mkdir /xml
 
 WORKDIR /run
 
