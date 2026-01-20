@@ -22,7 +22,7 @@ class Program
             return Task.CompletedTask;
         };
 
-        foreach (var a in XmlIterator.GetXmlPrinters("/xml/testdata.xml"))
+        foreach (var a in XmlIterator.GetXmlPrinters("/home/docker-user/server/DataBridge-config/printer.xml"))
         {
             PrinterFactory.CreatePrinter((string?)a.Element("Name") ?? "").FillFromXml(a).SetMessageFunctionDefault().ConnectToBroker().ConnectToDatabase(new InfluxDB(host,token,database));
         }
