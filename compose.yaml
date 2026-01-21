@@ -1,90 +1,59 @@
-version: '3.8'
-
-# Docker Compose-Konfiguration für InfluxDB 3 Core mit Web UI
 # Basiert auf influxdb:3-core und influxdb3-explorer
 
-networks:
-  influxdb3:
-    name: influxdb3
-    driver: bridge
-
 volumes:
-  influxdb3-data:
+  influxdb-data:
     driver: local
 
 services:
-
   program:
     build: . 
-
-    networks:
-      - influxdb3
-      - default
-
+    depends_on:
+      broker:
+        condition: service_healthy
     volumes:
-      - ./xmldata:/xml
-
+      - ./xmldata:/home/docker-user/server/DataBridge-config
     environment:
-      DBHOST: http://influxdb3:8181
-      DBTOKEN:
-      DBNAME: bydb
+      DBHOST: http://influxdb:8086
+      DBTOKEN: admintokenadmintoken
+      BUCKET: my-bucket
+      ORG: my-org
 
-      
-  # InfluxDB 3 Core Datenbank
-  influxdb3:
-    image: influxdb:3-core
-    container_name: influxdb3
-    hostname: influxdb3
-    restart: unless-stopped
+  influxdb:
+   image: influxdb:2
+   expose:
+     - 8086
+   ports:
+     - 8086:8086
+   volumes:
+     - influxdb-data:/var/lib/influxdb2
+   environment:
+     - DOCKER_INFLUXDB_INIT_MODE=setup
+     - DOCKER_INFLUXDB_INIT_USERNAME=admin
+     - DOCKER_INFLUXDB_INIT_PASSWORD=Password-super-secure
+     - DOCKER_INFLUXDB_INIT_ORG=my-org
+     - DOCKER_INFLUXDB_INIT_BUCKET=my-bucket
+     - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=admintokenadmintoken
+   healthcheck:
+     test: ["CMD", "curl", "-f", "http://localhost:8086/health"]
+     interval: 30s
+     timeout: 100s
+     retries: 5
 
-    command: >
-      influxdb3 serve
-      --object-store file
-      --data-dir /var/lib/influxdb3
-      --node-id node0
-      --without-auth
-
-    # ports:
-    #   - "8181:8181"  # InfluxDB 3 Core HTTP API Port
-
-    # Netzwerk-Konfiguration
-    networks:
-      - influxdb3
-
-    # Volumes für persistente Datenspeicherung
-    volumes:
-      - influxdb3-data:/var/lib/influxdb3
-      # Alternativ: lokales Verzeichnis verwenden
-      # - ./data:/var/lib/influxdb3
-
-    # Umgebungsvariablen für InfluxDB 3 Core
+  broker:
+    image: emqx/emqx:latest
+    container_name: emqx
+    ports:
+      - "1883:1883"    # MQTT
+      - "18083:18083"  # Web-Dashboard
     environment:
-      # Node-Identifier (eindeutig pro Host/Container)
-      INFLUXDB3_NODE_IDENTIFIER_PREFIX: "node0"
-
-      # Object Store Konfiguration
-      # Optionen: memory, memory-throttled, file, s3, google, azure
-      INFLUXDB3_OBJECT_STORE: "file"
-
-      # Data Directory für File-basierte Speicherung
-      INFLUXDB3_DB_DIR: "/var/lib/influxdb3"
-
-      # Optional: Logging-Level
-      # LOG_FILTER: "info"
-
-      # Optional: S3/Cloud Object Store Konfiguration
-      # Für S3:
-      # INFLUXDB3_OBJECT_STORE: "s3"
-      # INFLUXDB3_BUCKET: "your-bucket-name"
-      # AWS_ACCESS_KEY_ID: "your-access-key"
-      # AWS_SECRET_ACCESS_KEY: "your-secret-key"
-      # AWS_DEFAULT_REGION: "us-east-1"
-
-      # Für Azure:
-      # INFLUXDB3_OBJECT_STORE: "azure"
-      # INFLUXDB3_BUCKET: "your-container-name"
-      # AZURE_STORAGE_ACCOUNT: "your-storage-account"
-      # AZURE_STORAGE_ACCESS_KEY: "your-access-key"
+      - EMQX_DASHBOARD__DEFAULT_USERNAME=admin
+      - EMQX_DASHBOARD__DEFAULT_PASSWORD=public
     healthcheck:
-      disable: true
+      test: ["CMD", "/opt/emqx/bin/emqx_ctl", "status"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 30s
+
+
 

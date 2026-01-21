@@ -14,7 +14,8 @@ class Program
 
         string host = Environment.GetEnvironmentVariable("DBHOST") ?? string.Empty;
         string token =  Environment.GetEnvironmentVariable("DBTOKEN") ?? string.Empty;
-        string database =  Environment.GetEnvironmentVariable("DBNAME") ?? string.Empty;
+        string bucket =  Environment.GetEnvironmentVariable("BUCKET") ?? string.Empty;
+        string org =  Environment.GetEnvironmentVariable("ORG") ?? string.Empty;
         
         Func<MqttApplicationMessageReceivedEventArgs, Task> printToConsole = t =>
         {
@@ -24,7 +25,7 @@ class Program
 
         foreach (var a in XmlIterator.GetXmlPrinters("/home/docker-user/server/DataBridge-config/printer.xml"))
         {
-            PrinterFactory.CreatePrinter((string?)a.Element("Name") ?? "").FillFromXml(a).SetMessageFunctionDefault().ConnectToBroker().ConnectToDatabase(new InfluxDB(host,token,database));
+            PrinterFactory.CreatePrinter((string?)a.Element("Name") ?? "").FillFromXml(a).SetMessageFunctionDefault().ConnectToBroker().ConnectToDatabase(new InfluxDBDTO(host,token,bucket,org));
         }
 
 

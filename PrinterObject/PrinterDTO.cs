@@ -13,7 +13,7 @@ namespace HTW.Printer
         public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public MqttConnector? connector { get; set; }
-        public InfluxDB? database { get; set; }
+        public InfluxDBDTO? database { get; set; }
         public Func<MqttApplicationMessageReceivedEventArgs, Task> MessageFunction { get; set; } = t => Task.CompletedTask;
         public Queue<string> Messages { get; set; } = new Queue<string>();
     };

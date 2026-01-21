@@ -1,46 +1,61 @@
 using HTW.Influx.Database;
 using HTW.Printer;
 using HTW.Influx.DataConverter;
-using InfluxDB3.Client;
-using InfluxDB3.Client.Write;
+using InfluxDB.Client;
 using HTW.Result;
+using InfluxDB.Client.Writes;
 
 namespace HTW.Influx.Database
 {
-    public record InfluxDB(string host, string token, string database, InfluxDBClient? dbClient = null, Thread? runnerThread = null);
+    public record InfluxDBDTO(string host, string token, string bucket, string org, InfluxDBClient? dbClient = null, Thread? runnerThread = null);
 }
 
 namespace HTW.Influx.Extention
 {
     public static class InfluxExtention
     {
-        public static PrinterDTO ConnectToDatabase(this PrinterDTO pr, InfluxDB db)
+        public static PrinterDTO ConnectToDatabase(this PrinterDTO pr, InfluxDBDTO db)
         {
-            var dbc = new InfluxDBClient(db.host, db.token, db.database);
-            Thread thread = new Thread(async t =>
-            {
-                while (true)
+
+            var dbc = new InfluxDBClient(db.host, db.token);
+            var writeApi = dbc.GetWriteApi();
+            Console.WriteLine($"{db.host}, {db.token}");
+            Thread thread = new Thread(async _ =>
                 {
-                    if (pr.Messages.Count() > 0)
+                    var b = await dbc.PingAsync();
+                    Console.WriteLine($"DB Connection: {b}");
+                    while (true)
                     {
-                        var msg =pr.Messages.Dequeue();
-                        Result.Result<PointData> dataPoint = JasonToInflux.JsonToInfluxPoint(msg, pr);
-                        switch (dataPoint)
+                        Thread.Sleep(10);
+                        if (pr.Messages.Count() > 0)
                         {
-                            case Result<PointData>.Success(var a):
-                                await dbc.WritePointAsync(a, db.database);
-                                break;
-                            case Result<PointData>.Failure(var a):
-                                Console.WriteLine(String.Format("Fehler im Influx Adapter: {0}", a));
-                                break;
-                            default:
-                                break;
+                            var msg = pr.Messages.Dequeue();
+                            Result.Result<PointData> dataPoint = JasonToInflux.JsonToInfluxPoint(msg, pr);
+                            switch (dataPoint)
+                            {
+                                case Result<PointData>.Success(var a):
+                                    Console.WriteLine($"Influx: {a.ToLineProtocol()}");
+                                    try
+                                    {
+                                        writeApi.WritePoint(a, db.bucket, db.org);
+                                        writeApi.Flush();
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Console.WriteLine($"INFLUX: {e}");
+                                    }
+                                    break;
+                                case Result<PointData>.Failure(var a):
+                                    Console.WriteLine(String.Format("Fehler im Influx Adapter: {0}", a));
+                                    break;
+                                default:
+                                    break;
+                            }
+
                         }
-
                     }
-                }
 
-            });
+                });
             thread.Start();
 
 

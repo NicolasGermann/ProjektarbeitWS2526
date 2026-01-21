@@ -11,6 +11,7 @@ public static class MqttExtention
         Func<MqttApplicationMessageReceivedEventArgs, Task> SaveToStack = t =>
         {
             pr.Messages.Enqueue(Encoding.UTF8.GetString(t.ApplicationMessage.Payload));
+            Console.WriteLine($"MQTT: {Encoding.UTF8.GetString(t.ApplicationMessage.Payload)}");
             return Task.CompletedTask;
         };
         return pr with { MessageFunction = SaveToStack };

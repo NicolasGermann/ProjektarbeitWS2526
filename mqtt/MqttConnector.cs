@@ -26,12 +26,26 @@ namespace HTW.Connector
 
         async public Task ConnectAsync()
         {
-            await this._client.ConnectAsync(this._options);
+            try
+            {
+                await this._client.ConnectAsync(this._options);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"MQTT: {e}");
+            }
         }
 
         async public Task SubscribeAsync(string topic)
         {
-            await this._client.SubscribeAsync(topic);
+            try
+            {
+                await this._client.SubscribeAsync(topic);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"MQTT: {e}");
+            }
         }
 
     }
