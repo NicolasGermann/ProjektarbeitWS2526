@@ -14,9 +14,18 @@ namespace HTW.Connector
             _client = factory.CreateMqttClient();
 
             _options = new MqttClientOptionsBuilder()
+                .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V311)
                 .WithTcpServer(brokerHost, brokerPort)
                 .WithCredentials(username, password)
-                .WithCleanSession()
+                .WithCleanSession(true)
+                .WithKeepAlivePeriod(TimeSpan.FromSeconds(60))
+                .WithProtocolVersion(MQTTnet.Formatter.MqttProtocolVersion.V311)
+                .WithTlsOptions(new MqttClientTlsOptionsBuilder()
+                    .UseTls(true)
+                    .WithAllowUntrustedCertificates(true)
+                    .WithCertificateValidationHandler( _ => true)
+                    .WithIgnoreCertificateChainErrors(true)
+                    .WithIgnoreCertificateRevocationErrors(true).Build())
                 .Build();
 
             _client.ApplicationMessageReceivedAsync += messageFunc;
