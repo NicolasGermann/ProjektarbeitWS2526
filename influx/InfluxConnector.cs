@@ -34,7 +34,6 @@ namespace HTW.Influx.Extention
                             switch (dataPoint)
                             {
                                 case Result<PointData>.Success(var a):
-                                    Console.WriteLine($"Influx: {a.ToLineProtocol()}");
                                     try
                                     {
                                         writeApi.WritePoint(a, db.bucket, db.org);

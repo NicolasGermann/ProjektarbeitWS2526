@@ -20,9 +20,7 @@ namespace HTW.Influx.DataConverter
                                     .Tag("serial", pr.ID)
                                     .Tag("device", pr.Name);
 
-            Console.WriteLine($"JSONINFLUX: {pointData}");
-
-            foreach (var e in dict)
+                        foreach (var e in dict)
             {
                 var (type, value) = ParseValue(e.Value.ToString()!);
                 pointData = pointData.Field(e.Key, value);
