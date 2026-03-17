@@ -95,6 +95,10 @@ public static class JasonToInflux {
         var subtaskName = TryReadString(dict, "subtask_name");
         if (!string.IsNullOrWhiteSpace(subtaskName))
             pr.CurrentSubtaskName = subtaskName;
+
+        var threeMfUrl = TryReadString(dict, "url");
+        if (!string.IsNullOrWhiteSpace(threeMfUrl))
+            pr.CurrentThreeMfUrl = threeMfUrl;
     }
 
     private static bool IsActiveState(string? state)

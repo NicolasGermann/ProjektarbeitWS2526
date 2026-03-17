@@ -6,6 +6,7 @@ using Projektarbeit.IO;
 using InfluxDB.Client;
 using HTW.Result;
 using InfluxDB.Client.Writes;
+using HTW.Images;
 
 namespace HTW.Influx.Extention
 {
@@ -50,6 +51,7 @@ namespace HTW.Influx.Extention
                                         Console.WriteLine(
                                             $"[INFLUX] job_id={jobLabel} fields=[{string.Join(", ", built.FieldNames)}]");
 
+                                        TryDownloadPreview(pr);
                                         TryExportFinishedJob(pr, db);
                                     }
                                     catch (Exception e)
@@ -114,6 +116,31 @@ namespace HTW.Influx.Extention
             {
                 Console.WriteLine(
                     $"[JOB-EXPORT] Fehler bei printer={pr.Name} job_id={finishedJobId}: {ex.Message}");
+            }
+        }
+
+        private static void TryDownloadPreview(PrinterDTO pr)
+        {
+            var url = pr.CurrentThreeMfUrl;
+
+            if (string.IsNullOrWhiteSpace(url))
+            return;
+
+            if (string.Equals(pr.LastDownloadedThreeMfUrl, url, StringComparison.Ordinal))
+            return;
+
+            try
+            {
+                var downloader = new ThreeMfPreviewDownloader("/images");
+                var imagePath = downloader.DownloadAndExtractLatestPreviewAsync(url, pr.Name).GetAwaiter().GetResult();
+
+                pr.LastDownloadedThreeMfUrl = url;
+
+                Console.WriteLine($"[PREVIEW] printer={pr.Name} image={imagePath}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[PREVIEW] Fehler bei printer={pr.Name}: {ex.Message}");
             }
         }
     }
