@@ -61,8 +61,6 @@ public static class JasonToInflux {
     private static void UpdatePrinterStateFromMessage(Dictionary<string, object> dict, PrinterDTO pr)
     {
         var previousJobId = pr.CurrentJobId;
-        var previousTaskId = pr.CurrentTaskId;
-        var previousProjectId = pr.CurrentProjectId;
 
         var gcodeState = TryReadString(dict, "gcode_state");
         if (!string.IsNullOrWhiteSpace(gcodeState))

@@ -44,7 +44,9 @@ namespace HTW.Influx.Extention
                                         writeApi.WritePoint(built.Point, db.bucket, db.org);
                                         writeApi.Flush();
 
-                                        var jobLabel = string.IsNullOrWhiteSpace(built.JobId) ? "no-job" : built.JobId;
+                                        var effectiveJobId = built.JobId ?? pr.LastFinishedJobId;
+                                        var jobLabel = string.IsNullOrWhiteSpace(effectiveJobId) ? "no-job" : effectiveJobId;
+
                                         Console.WriteLine(
                                             $"[INFLUX] job_id={jobLabel} fields=[{string.Join(", ", built.FieldNames)}]");
 
@@ -90,10 +92,10 @@ namespace HTW.Influx.Extention
             if (string.Equals(pr.LastExportedJobId, finishedJobId, StringComparison.Ordinal))
                 return;
 
-            Thread.Sleep(500);
-
             try
             {
+                Thread.Sleep(500);
+
                 var exporter = new JobCsvExporter(db);
                 var csvPath = exporter.ExportJobToCsvAsync(pr.Name, finishedJobId)
                     .GetAwaiter()
@@ -103,6 +105,7 @@ namespace HTW.Influx.Extention
                 var copiedPath = copier.CopyWithTimestamp();
 
                 pr.LastExportedJobId = finishedJobId;
+                pr.LastFinishedJobId = null;
 
                 Console.WriteLine(
                     $"[JOB-EXPORT] printer={pr.Name} job_id={finishedJobId} csv={copiedPath}");
