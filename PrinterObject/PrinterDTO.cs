@@ -23,6 +23,9 @@ namespace HTW.Printer
         public string? CurrentProjectId { get; set; }
         public string? CurrentSubtaskName { get; set; }
         public string? CurrentGcodeState { get; set; }
+
+        public string? LastFinishedJobId { get; set; }
+        public string? LastExportedJobId { get; set; }
     };
 
     public static class PrinterFactory
