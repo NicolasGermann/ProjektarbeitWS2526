@@ -13,6 +13,7 @@ namespace HTW.Influx.Extention
         {
             var dbc = new InfluxDBClient(db.host, db.token);
             var writeApi = dbc.GetWriteApi();
+
             Console.WriteLine($"{db.host}, {db.token}");
 
             Thread thread = new Thread(async _ =>
