@@ -7,62 +7,67 @@ namespace HTW.Influx.DataConverter
 {
     public static class JasonToInflux
     {
-        public static Result<PointData> JsonToInfluxPoint(string jsonString, PrinterDTO pr)
+public static Result<(PointData Point, string Measurement, List<string> FieldNames, string? JobId, string? GcodeState)>
+    JsonToInfluxPoint(string jsonString, PrinterDTO pr)
+{
+    try
+    {
+        Dictionary<string, object>? rootDict = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonString);
+
+        if (rootDict is null)
+            return new Result<(PointData, string, List<string>, string?, string?)>.Failure("Nachricht konnte nicht serialisiert werden.");
+
+        Dictionary<string, object>? dict = rootDict;
+
+        if (rootDict.TryGetValue("print", out var printObj) && printObj is JsonElement printElement)
         {
-            try
-            {
-                Dictionary<string, object>? rootDict = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonString);
-
-                if (rootDict is null)
-                    return new Result<PointData>.Failure("Nachricht konnte nicht serialisiert werden.");
-
-                Dictionary<string, object>? dict = rootDict;
-
-                if (rootDict.TryGetValue("print", out var printObj) && printObj is JsonElement printElement)
-                {
-                    dict = printElement.Deserialize<Dictionary<string, object>>();
-                }
-
-                if (dict is null)
-                    return new Result<PointData>.Failure("Print-Nachricht konnte nicht serialisiert werden.");
-
-                UpdatePrinterStateFromMessage(dict, pr);
-
-                var output = string.Join(", ", dict.Select(kvp => $"{kvp.Key}={kvp.Value}"));
-                Console.WriteLine($"JSONINFLUX: {output}");
-
-                PointData pointData = PointData
-                    .Measurement($"Printer Data: {pr.Name}")
-                    .Tag("serial", pr.ID)
-                    .Tag("device", pr.Name);
-
-                if (!string.IsNullOrWhiteSpace(pr.CurrentJobId))
-                    pointData = pointData.Tag("job_id", pr.CurrentJobId!);
-
-                if (!string.IsNullOrWhiteSpace(pr.CurrentTaskId))
-                    pointData = pointData.Tag("task_id", pr.CurrentTaskId!);
-
-                if (!string.IsNullOrWhiteSpace(pr.CurrentProjectId))
-                    pointData = pointData.Tag("project_id", pr.CurrentProjectId!);
-
-                foreach (var e in dict)
-                {
-                    var valueAsString = ConvertJsonValueToString(e.Value);
-
-                    if (valueAsString is null)
-                        continue;
-
-                    var (_, value) = ParseValue(valueAsString);
-                    pointData = pointData.Field(e.Key, value);
-                }
-
-                return new Result<PointData>.Success(pointData);
-            }
-            catch (Exception ex)
-            {
-                return new Result<PointData>.Failure($"JsonToInfluxPoint Fehler: {ex.Message}");
-            }
+            dict = printElement.Deserialize<Dictionary<string, object>>();
         }
+
+        if (dict is null)
+            return new Result<(PointData, string, List<string>, string?, string?)>.Failure("Print-Nachricht konnte nicht serialisiert werden.");
+
+        UpdatePrinterStateFromMessage(dict, pr);
+
+        string measurementName = $"Printer Data: {pr.Name}";
+
+        PointData pointData = PointData
+            .Measurement(measurementName)
+            .Tag("serial", pr.ID)
+            .Tag("device", pr.Name);
+
+        if (!string.IsNullOrWhiteSpace(pr.CurrentJobId))
+            pointData = pointData.Tag("job_id", pr.CurrentJobId!);
+
+        if (!string.IsNullOrWhiteSpace(pr.CurrentTaskId))
+            pointData = pointData.Tag("task_id", pr.CurrentTaskId!);
+
+        if (!string.IsNullOrWhiteSpace(pr.CurrentProjectId))
+            pointData = pointData.Tag("project_id", pr.CurrentProjectId!);
+
+        var fieldNames = new List<string>();
+
+        foreach (var e in dict)
+        {
+            var valueAsString = ConvertJsonValueToString(e.Value);
+
+            if (valueAsString is null)
+                continue;
+
+            var (_, value) = ParseValue(valueAsString);
+            pointData = pointData.Field(e.Key, value);
+            fieldNames.Add(e.Key);
+        }
+
+        return new Result<(PointData, string, List<string>, string?, string?)>.Success(
+            (pointData, measurementName, fieldNames, pr.CurrentJobId, pr.CurrentGcodeState)
+        );
+    }
+    catch (Exception ex)
+    {
+        return new Result<(PointData, string, List<string>, string?, string?)>.Failure($"JsonToInfluxPoint Fehler: {ex.Message}");
+    }
+}
 
         private static void UpdatePrinterStateFromMessage(Dictionary<string, object> dict, PrinterDTO pr)
         {

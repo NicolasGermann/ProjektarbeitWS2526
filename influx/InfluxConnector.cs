@@ -26,31 +26,34 @@ namespace HTW.Influx.Extention
                     try
                     {
                         if (pr.Messages.TryDequeue(out var msg))
-                        {
-                            Result.Result<PointData> dataPoint = JasonToInflux.JsonToInfluxPoint(msg, pr);
+{
+    var result = JasonToInflux.JsonToInfluxPoint(msg, pr);
 
-                            switch (dataPoint)
-                            {
-                                case Result<PointData>.Success(var a):
-                                    try
-                                    {
-                                        writeApi.WritePoint(a, db.bucket, db.org);
-                                        writeApi.Flush();
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        Console.WriteLine($"INFLUX: {e}");
-                                    }
-                                    break;
+    switch (result)
+    {
+        case Result<(PointData Point, string Measurement, List<string> FieldNames, string? JobId, string? GcodeState)>.Success(var built):
+            try
+            {
+                writeApi.WritePoint(built.Point, db.bucket, db.org);
+                writeApi.Flush();
 
-                                case Result<PointData>.Failure(var a):
-                                    Console.WriteLine($"Fehler im Influx Adapter: {a}");
-                                    break;
+                Console.WriteLine(
+                    $"[INFLUX] job_id={(built.JobId ?? "-")} " +
+                    $"measurement=\"{built.Measurement}\" " +
+                    $"fields=[{string.Join(", ", built.FieldNames)}]");
+            }
+            catch (Exception e)
+            {
+                onsole.WriteLine(
+    $"[INFLUX] job_id={(built.JobId ?? "-")} fields=[{string.Join(", ", built.FieldNames)}]");
+            }
+            break;
 
-                                default:
-                                    break;
-                            }
-                        }
+        case Result<(PointData Point, string Measurement, List<string> FieldNames, string? JobId, string? GcodeState)>.Failure(var error):
+            Console.WriteLine($"[INFLUX] Adapter Fehler: {error}");
+            break;
+    }
+}
                         else
                         {
                             Thread.Sleep(10);
