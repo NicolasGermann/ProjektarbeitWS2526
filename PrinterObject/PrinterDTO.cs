@@ -1,6 +1,7 @@
 using HTW.Connector;
 using HTW.Influx.Database;
 using MQTTnet;
+using System.Collections.Concurrent;
 
 namespace HTW.Printer
 {
@@ -15,7 +16,13 @@ namespace HTW.Printer
         public MqttConnector? connector { get; set; }
         public InfluxDBDTO? database { get; set; }
         public Func<MqttApplicationMessageReceivedEventArgs, Task> MessageFunction { get; set; } = t => Task.CompletedTask;
-        public Queue<string> Messages { get; set; } = new Queue<string>();
+        public ConcurrentQueue<string> Messages { get; set; } = new();
+
+        public string? CurrentJobId { get; set; }
+        public string? CurrentTaskId { get; set; }
+        public string? CurrentProjectId { get; set; }
+        public string? CurrentSubtaskName { get; set; }
+        public string? CurrentGcodeState { get; set; }
     };
 
     public static class PrinterFactory

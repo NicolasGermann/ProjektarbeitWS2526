@@ -29,7 +29,9 @@ class Program
         }
 
 
-        while (true) { }
+        while (true) {
+            Thread.Sleep(1000);
+         }
 
     }
 }

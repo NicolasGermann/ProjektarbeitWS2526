@@ -15,6 +15,8 @@ COPY --from=build /out/. /run
 
 RUN mkdir /xml
 
+VOLUME /images
+
 WORKDIR /run
 
 CMD /run/Projektarbeit
