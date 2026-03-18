@@ -13,7 +13,10 @@ FROM mcr.microsoft.com/dotnet/runtime:8.0 AS run
 COPY --from=build /out/. /run 
 # COPY ./xmldata/testdata.xml /xml
 
-RUN mkdir /xml
+RUN mkdir /xml /images
+
+# Yeah is bad but we must look
+RUN chmod 777 /images  
 
 VOLUME /images
 
