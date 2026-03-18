@@ -52,10 +52,13 @@ namespace HTW.Influx.DataConverter
 
                 var fieldNames = new List<string>();
 
+                // Welche Felder nicht mit beachtet werden soll weil sie keine primitiven enthalten und generell uninteresant sind
                 foreach (var e in dict)
-                {
-                    if (e.Value is JsonElement jsonElement &&
-                        (jsonElement.ValueKind == JsonValueKind.Object || jsonElement.ValueKind == JsonValueKind.Array))
+                {   
+                    if (e.Key == "ams" ||
+                        e.Key == "upload" ||
+                        e.Key == "xcam" ||
+                        e.Key == "ipcam")
                     {
                         continue;
                     }
