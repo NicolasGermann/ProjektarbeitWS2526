@@ -22,7 +22,7 @@ namespace HTW.Influx.Extention
                 try
                 {
                     var b = dbc.PingAsync().GetAwaiter().GetResult();
-                    Console.WriteLine($"[INFLUX] DB Connection: {b}");
+                    Console.WriteLine($"[INFLUX] printer={pr.Name} serial={pr.ID} DB Connection: {b}");
                 }
                 catch (Exception ex)
                 {
@@ -35,7 +35,7 @@ namespace HTW.Influx.Extention
                     {
                         if (pr.Messages.TryDequeue(out var msg))
                         {
-                            var result = JasonToInflux.JsonToInfluxPoint(msg, pr);
+                            var result = JsonToInflux.JsonToInfluxPoint(msg, pr);
 
                             switch (result)
                             {
@@ -110,12 +110,12 @@ namespace HTW.Influx.Extention
                 pr.LastFinishedJobId = null;
 
                 Console.WriteLine(
-                    $"[JOB-EXPORT] printer={pr.Name} job_id={finishedJobId} csv={copiedPath}");
+                    $"[JOB-EXPORT] printer={pr.Name} serial={pr.ID} job_id={finishedJobId} csv={copiedPath}");
             }
             catch (Exception ex)
             {
                 Console.WriteLine(
-                    $"[JOB-EXPORT] Fehler bei printer={pr.Name} job_id={finishedJobId}: {ex.Message}");
+                    $"[JOB-EXPORT] Fehler bei printer={pr.Name} serial={pr.ID} job_id={finishedJobId}: {ex.Message}");
             }
         }
 
@@ -136,11 +136,11 @@ namespace HTW.Influx.Extention
 
                 pr.LastDownloadedThreeMfUrl = url;
 
-                Console.WriteLine($"[PREVIEW] printer={pr.Name} image={imagePath}");
+                Console.WriteLine($"[PREVIEW] printer={pr.Name} serial={pr.ID} image={imagePath}");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[PREVIEW] Fehler bei printer={pr.Name}: {ex.Message}");
+                Console.WriteLine($"[PREVIEW] Fehler bei printer={pr.Name} serial={pr.ID}: {ex.Message}");
             }
         }
     }
