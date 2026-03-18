@@ -49,9 +49,10 @@ namespace HTW.Influx.Extention
                                         var jobLabel = string.IsNullOrWhiteSpace(effectiveJobId) ? "no-job" : effectiveJobId;
 
                                         Console.WriteLine(
-                                            $"[INFLUX] job_id={jobLabel} fields=[{string.Join(", ", built.FieldNames)}]");
+                                            $"[INFLUX] printer={pr.Name} serial={pr.ID} job_id={jobLabel} fields=[{string.Join(", ", built.FieldNames)}]");
 
                                         TryDownloadPreview(pr);
+                                        TryCopyThreeMfToSmb(pr);
                                         TryExportFinishedJob(pr, db);
                                     }
                                     catch (Exception e)
@@ -104,7 +105,7 @@ namespace HTW.Influx.Extention
                     .GetResult();
 
                 var copier = new CSVFileCopier(csvPath);
-                var copiedPath = copier.CopyWithTimestamp();
+                var copiedPath = copier.CopyToJobFolder(pr.Name, finishedJobId);
 
                 pr.LastExportedJobId = finishedJobId;
                 pr.LastFinishedJobId = null;
@@ -141,6 +142,42 @@ namespace HTW.Influx.Extention
             catch (Exception ex)
             {
                 Console.WriteLine($"[PREVIEW] Fehler bei printer={pr.Name} serial={pr.ID}: {ex.Message}");
+            }
+        }
+
+        private static void TryCopyThreeMfToSmb(PrinterDTO pr)
+        {
+            var url = pr.CurrentThreeMfUrl;
+            var jobId = pr.CurrentJobId;
+
+            if (string.IsNullOrWhiteSpace(url))
+                return;
+
+            if (string.IsNullOrWhiteSpace(jobId))
+                return;
+
+            var copyKey = $"{jobId}|{url}";
+
+            if (string.Equals(pr.LastCopiedThreeMfUrl, copyKey, StringComparison.Ordinal))
+                return;
+
+            try
+            {
+                var copier = new ThreeMfToSmbCopier();
+                var targetPath = copier
+                    .CopyFromUrlToJobFolderAsync(url, pr.Name, jobId)
+                    .GetAwaiter()
+                    .GetResult();
+
+                pr.LastCopiedThreeMfUrl = copyKey;
+
+                Console.WriteLine(
+                    $"[3MF-SMB] printer={pr.Name} serial={pr.ID} job_id={jobId} file={targetPath}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(
+                    $"[3MF-SMB] Fehler bei printer={pr.Name} serial={pr.ID} job_id={jobId}: {ex.Message}");
             }
         }
     }

@@ -29,6 +29,9 @@ namespace HTW.Printer
 
         public string? CurrentThreeMfUrl { get; set; }
         public string? LastDownloadedThreeMfUrl { get; set; }
+        public string? LastCopiedThreeMfUrl { get; set; }
+
+        
     };
 
     public static class PrinterFactory
