@@ -67,7 +67,7 @@ namespace HTW.Influx.Export
 
             foreach (var record in records)
             {
-                var time = record.GetTime()?.ToString("O", CultureInfo.InvariantCulture) ?? "";
+                var time = record.GetTime()?.ToDateTimeUtc().ToString("O", CultureInfo.InvariantCulture) ?? "";
                 var measurementName = GetValue(record, "_measurement") ?? measurement;
                 var field = record.GetField() ?? "";
                 var value = ConvertValue(record.GetValue());
