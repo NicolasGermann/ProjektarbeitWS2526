@@ -22,4 +22,4 @@ VOLUME /images
 
 WORKDIR /run
 
-CMD /run/Projektarbeit
+CMD ["/run/Projektarbeit"]
