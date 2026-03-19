@@ -19,9 +19,22 @@ public static class MqttExtention
 
     static public PrinterDTO ConnectToBroker(this PrinterDTO pr)
     {
-        var prnew = pr with { connector = new MqttConnector(pr.Host, pr.Port, pr.Username, pr.Password, pr.MessageFunction) };
-        prnew.connector.ConnectAsync().ContinueWith(t => prnew.connector.SubscribeAsync(String.Format("device/{0}/report", pr.ID)));
-        Console.WriteLine("Verbunden");
+        var prnew = pr with
+        {
+            connector = new MqttConnector(pr.Host, pr.Port, pr.Username, pr.Password, pr.MessageFunction)
+        };
+
+        try
+        {
+            prnew.connector.ConnectAsync().GetAwaiter().GetResult();
+            prnew.connector.SubscribeAsync($"device/{pr.ID}/report").GetAwaiter().GetResult();
+            Console.WriteLine($"[MQTT] Verbunden und subscribed: {pr.Name}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[MQTT] Startfehler bei {pr.Name}: {ex}");
+        }
+
         return prnew;
     }
 
