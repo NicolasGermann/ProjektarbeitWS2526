@@ -52,6 +52,7 @@ namespace HTW.Images
 
             try
             {
+                using var httpClient = new HttpClient();
                 using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 cts.CancelAfter(TimeSpan.FromSeconds(30));
 
@@ -59,19 +60,18 @@ namespace HTW.Images
                     uri,
                     HttpCompletionOption.ResponseHeadersRead,
                     cts.Token);
-                {
-                    response.EnsureSuccessStatusCode();
 
-                    await using var remoteStream = await response.Content.ReadAsStreamAsync(cancellationToken);
-                    await using var localFileStream = new FileStream(
-                        tempArchivePath,
-                        FileMode.Create,
-                        FileAccess.Write,
-                        FileShare.None);
+                response.EnsureSuccessStatusCode();
 
-                    await remoteStream.CopyToAsync(localFileStream, cancellationToken);
-                    await localFileStream.FlushAsync(cancellationToken);
-                }
+                await using var remoteStream = await response.Content.ReadAsStreamAsync(cts.Token);
+                await using var localFileStream = new FileStream(
+                    tempArchivePath,
+                    FileMode.Create,
+                    FileAccess.Write,
+                    FileShare.None);
+
+                await remoteStream.CopyToAsync(localFileStream, cts.Token);
+                await localFileStream.FlushAsync(cts.Token);
 
                 ZipFile.ExtractToDirectory(tempArchivePath, extractDirectory, overwriteFiles: true);
 
