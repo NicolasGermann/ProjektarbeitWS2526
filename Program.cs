@@ -43,7 +43,8 @@ class Program
 
             while (true)
             {
-                Thread.Sleep(1000);
+                Console.WriteLine($"[HEARTBEAT] {DateTime.UtcNow:O}");
+                Thread.Sleep(TimeSpan.FromMinutes(1));
             }
         }
         catch (Exception ex)
