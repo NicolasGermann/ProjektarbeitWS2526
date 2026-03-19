@@ -18,8 +18,6 @@ namespace HTW.XmlReaderExtention
 
 	}
 
-    }
-
     public static IEnumerable<XElement> GetXmlPrinters(string xmlPath)
     {
         if (!File.Exists(xmlPath))
@@ -28,5 +26,9 @@ namespace HTW.XmlReaderExtention
         var doc = XDocument.Load(xmlPath);
         return doc.Descendants("Printer");
     }
+
+    }
+
+    
 
 }
