@@ -21,14 +21,25 @@ class Program
             var xmlPath = "/home/docker-user/server/DataBridge-config/printer.xml";
             Console.WriteLine($"Loading printer config from: {xmlPath}");
 
+            Console.WriteLine("[START] Lade XML");
             foreach (var a in XmlIterator.GetXmlPrinters(xmlPath))
             {
-                PrinterFactory.CreatePrinter((string?)a.Element("Name") ?? "")
-                    .FillFromXml(a)
-                    .SetMessageFunctionDefault()
-                    .ConnectToBroker()
-                    .ConnectToDatabase(new InfluxDBDTO(host, token, bucket, org));
+                Console.WriteLine("[START] Erzeuge Drucker");
+                var printer = PrinterFactory.CreatePrinter((string?)a.Element("Name") ?? "");
+
+                Console.WriteLine("[START] FillFromXml");
+                printer = printer.FillFromXml(a);
+
+                Console.WriteLine("[START] SetMessageFunctionDefault");
+                printer = printer.SetMessageFunctionDefault();
+
+                Console.WriteLine("[START] ConnectToBroker");
+                printer = printer.ConnectToBroker();
+
+                Console.WriteLine("[START] ConnectToDatabase");
+                printer = printer.ConnectToDatabase(new InfluxDBDTO(host, token, bucket, org));
             }
+            Console.WriteLine("[START] Startup abgeschlossen");
 
             while (true)
             {
