@@ -51,7 +51,10 @@ namespace Projektarbeit.IO
             var fileName = GetSafeThreeMfFileName(uri, printerName, jobId);
             var targetFilePath = Path.Combine(targetDirectory, fileName);
 
-            using var httpClient = new HttpClient();
+            using var httpClient = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(30)
+            };
             using var response = await httpClient.GetAsync(
                 uri,
                 HttpCompletionOption.ResponseHeadersRead,

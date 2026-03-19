@@ -33,6 +33,11 @@ namespace HTW.Influx.Extention
                 {
                     try
                     {
+                        if (DateTime.UtcNow.Second == 0)
+                        {
+                            Console.WriteLine($"[HEARTBEAT] printer={pr.Name} serial={pr.ID} queue={pr.Messages.Count}");
+                        }
+
                         if (pr.Messages.TryDequeue(out var msg))
                         {
                             var result = JsonToInflux.JsonToInfluxPoint(msg, pr);
@@ -43,7 +48,6 @@ namespace HTW.Influx.Extention
                                     try
                                     {
                                         writeApi.WritePoint(built.Point, db.bucket, db.org);
-                                        writeApi.Flush();
 
                                         var effectiveJobId = built.JobId ?? pr.LastFinishedJobId;
                                         var jobLabel = string.IsNullOrWhiteSpace(effectiveJobId) ? "no-job" : effectiveJobId;
@@ -125,15 +129,17 @@ namespace HTW.Influx.Extention
             var url = pr.CurrentThreeMfUrl;
 
             if (string.IsNullOrWhiteSpace(url))
-            return;
+                return;
 
             if (string.Equals(pr.LastDownloadedThreeMfUrl, url, StringComparison.Ordinal))
-            return;
+                return;
 
             try
             {
                 var downloader = new ThreeMfPreviewDownloader("/images");
-                var imagePath = downloader.DownloadAndExtractLatestPreviewAsync(url, pr.Name).GetAwaiter().GetResult();
+                var imagePath = downloader.DownloadAndExtractLatestPreviewAsync(url, pr.Name)
+                    .GetAwaiter()
+                    .GetResult();
 
                 pr.LastDownloadedThreeMfUrl = url;
 
@@ -180,31 +186,32 @@ namespace HTW.Influx.Extention
                     $"[3MF-SMB] Fehler bei printer={pr.Name} serial={pr.ID} job_id={jobId}: {ex.Message}");
             }
         }
-    }
 
-    private static bool RunWithTimeout(Action action, TimeSpan timeout, string label)
-    {
-        try
+        private static bool RunWithTimeout(Action action, TimeSpan timeout, string label)
         {
-            var task = Task.Run(action);
-            if (!task.Wait(timeout))
+            try
             {
-                Console.WriteLine($"[TIMEOUT] {label} nach {timeout.TotalSeconds}s abgebrochen");
+                var task = Task.Run(action);
+
+                if (!task.Wait(timeout))
+                {
+                    Console.WriteLine($"[TIMEOUT] {label} nach {timeout.TotalSeconds}s abgebrochen");
+                    return false;
+                }
+
+                if (task.IsFaulted)
+                {
+                    Console.WriteLine($"[ERROR] {label}: {task.Exception?.GetBaseException()}");
+                    return false;
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] {label}: {ex}");
                 return false;
             }
-
-            if (task.IsFaulted)
-            {
-                Console.WriteLine($"[ERROR] {label}: {task.Exception?.GetBaseException()}");
-                return false;
-            }
-
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[ERROR] {label}: {ex}");
-            return false;
         }
     }
 }
