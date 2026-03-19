@@ -54,23 +54,27 @@ namespace HTW.Influx.DataConverter
 
                 // Welche Felder nicht mit beachtet werden soll weil sie keine primitiven enthalten und generell uninteresant sind
                 foreach (var e in dict)
-                {   
-                    if (e.Key == "ams" ||
-                        e.Key == "upload" ||
-                        e.Key == "xcam" ||
-                        e.Key == "ipcam")
+                {
+                    try
                     {
-                        continue;
+                        if (string.IsNullOrWhiteSpace(e.Key))
+                            continue;
+
+                        if (e.Key == "ams" || e.Key == "upload" || e.Key == "xcam" || e.Key == "ipcam")
+                            continue;
+
+                        var valueAsString = ConvertJsonValueToString(e.Value);
+                        if (valueAsString is null)
+                            continue;
+
+                        var (_, value) = ParseValue(valueAsString);
+                        pointData = pointData.Field(e.Key, value);
+                        fieldNames.Add(e.Key);
                     }
-
-                    var valueAsString = ConvertJsonValueToString(e.Value);
-
-                    if (valueAsString is null)
-                        continue;
-
-                    var (_, value) = ParseValue(valueAsString);
-                    pointData = pointData.Field(e.Key, value);
-                    fieldNames.Add(e.Key);
+                    catch (Exception fieldEx)
+                    {
+                        Console.WriteLine($"[INFLUX] Feld übersprungen key='{e.Key}': {fieldEx.GetType().Name}: {fieldEx.Message}");
+                    }
                 }
 
                 return new Result<(PointData, string, List<string>, string?, string?)>.Success(
