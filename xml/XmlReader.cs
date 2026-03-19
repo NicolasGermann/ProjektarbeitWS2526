@@ -5,7 +5,8 @@ namespace HTW.XmlReaderExtention
 {
     public static class XmlReaderExtention
     {
-	public static PrinterDTO FillFromXml(this PrinterDTO pr, XElement printer){
+        public static PrinterDTO FillFromXml(this PrinterDTO pr, XElement printer)
+        {
             return new PrinterDTO
             {
                 Name = (string?)printer?.Element("Name") ?? "",
@@ -15,20 +16,18 @@ namespace HTW.XmlReaderExtention
                 Username = (string?)printer?.Element("Username") ?? "",
                 Password = (string?)printer?.Element("Password") ?? ""
             };
+        }
+    }
 
-	}
-
-    public static IEnumerable<XElement> GetXmlPrinters(string xmlPath)
+    public static class XmlIterator
     {
-        if (!File.Exists(xmlPath))
-            throw new FileNotFoundException($"printer.xml nicht gefunden: {xmlPath}");
+        public static IEnumerable<XElement> GetXmlPrinters(string xmlPath)
+        {
+            if (!File.Exists(xmlPath))
+                throw new FileNotFoundException($"printer.xml nicht gefunden: {xmlPath}");
 
-        var doc = XDocument.Load(xmlPath);
-        return doc.Descendants("Printer");
+            var doc = XDocument.Load(xmlPath);
+            return doc.Descendants("Printer");
+        }
     }
-
-    }
-
-    
-
 }
