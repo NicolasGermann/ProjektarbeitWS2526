@@ -20,13 +20,13 @@ namespace HTW.XmlReaderExtention
 
     }
 
-    public static class XmlIterator
+    public static IEnumerable<XElement> GetXmlPrinters(string xmlPath)
     {
-        public static IEnumerable<XElement> GetXmlPrinters(string xmlPath)
-        {
-            var _doc = XDocument.Load(xmlPath);
-            return _doc.Descendants("Printer");
-        }
+        if (!File.Exists(xmlPath))
+            throw new FileNotFoundException($"printer.xml nicht gefunden: {xmlPath}");
+
+        var doc = XDocument.Load(xmlPath);
+        return doc.Descendants("Printer");
     }
 
 }
