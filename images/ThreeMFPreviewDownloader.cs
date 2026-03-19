@@ -52,12 +52,13 @@ namespace HTW.Images
 
             try
             {
-                using var httpClient = new HttpClient();
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                cts.CancelAfter(TimeSpan.FromSeconds(30));
 
-                using (var response = await httpClient.GetAsync(
+                using var response = await httpClient.GetAsync(
                     uri,
                     HttpCompletionOption.ResponseHeadersRead,
-                    cancellationToken))
+                    cts.Token);
                 {
                     response.EnsureSuccessStatusCode();
 

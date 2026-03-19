@@ -51,9 +51,9 @@ namespace HTW.Influx.Extention
                                         Console.WriteLine(
                                             $"[INFLUX] printer={pr.Name} serial={pr.ID} job_id={jobLabel} fields=[{string.Join(", ", built.FieldNames)}]");
 
-                                        TryDownloadPreview(pr);
-                                        TryCopyThreeMfToSmb(pr);
-                                        TryExportFinishedJob(pr, db);
+                                        RunWithTimeout(() => TryDownloadPreview(pr), TimeSpan.FromSeconds(30), $"Preview {pr.Name}");
+                                        RunWithTimeout(() => TryCopyThreeMfToSmb(pr), TimeSpan.FromSeconds(60), $"3MF copy {pr.Name}");
+                                        RunWithTimeout(() => TryExportFinishedJob(pr, db), TimeSpan.FromSeconds(60), $"CSV export {pr.Name}");
                                     }
                                     catch (Exception e)
                                     {
@@ -179,6 +179,32 @@ namespace HTW.Influx.Extention
                 Console.WriteLine(
                     $"[3MF-SMB] Fehler bei printer={pr.Name} serial={pr.ID} job_id={jobId}: {ex.Message}");
             }
+        }
+    }
+
+    private static bool RunWithTimeout(Action action, TimeSpan timeout, string label)
+    {
+        try
+        {
+            var task = Task.Run(action);
+            if (!task.Wait(timeout))
+            {
+                Console.WriteLine($"[TIMEOUT] {label} nach {timeout.TotalSeconds}s abgebrochen");
+                return false;
+            }
+
+            if (task.IsFaulted)
+            {
+                Console.WriteLine($"[ERROR] {label}: {task.Exception?.GetBaseException()}");
+                return false;
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ERROR] {label}: {ex}");
+            return false;
         }
     }
 }
