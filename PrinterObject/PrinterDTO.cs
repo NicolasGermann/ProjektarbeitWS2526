@@ -1,6 +1,7 @@
 using HTW.Connector;
 using HTW.Influx.Database;
 using MQTTnet;
+using HTW.Result;
 
 namespace HTW.Printer
 {
@@ -20,9 +21,9 @@ namespace HTW.Printer
 
     public static class PrinterFactory
     {
-        public static PrinterDTO CreatePrinter(string Name)
+        public static Result<PrinterDTO> CreatePrinter(string Name)
         {
-            return new PrinterDTO() { Name = Name };
+            return Result<PrinterDTO>.Some(new PrinterDTO() { Name = Name });
         }
     }
 }
