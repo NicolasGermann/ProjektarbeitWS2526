@@ -51,30 +51,44 @@ namespace Projektarbeit.IO
             var fileName = GetSafeThreeMfFileName(uri, printerName, jobId);
             var targetFilePath = Path.Combine(targetDirectory, fileName);
 
-            using var httpClient = new HttpClient
-            {
-                Timeout = TimeSpan.FromSeconds(30)
-            };
-            using var response = await httpClient.GetAsync(
-                uri,
-                HttpCompletionOption.ResponseHeadersRead,
-                cancellationToken);
-
-            response.EnsureSuccessStatusCode();
-
             var fileMode = overwrite ? FileMode.Create : FileMode.CreateNew;
 
-            await using var remoteStream = await response.Content.ReadAsStreamAsync(cancellationToken);
-            await using var localFileStream = new FileStream(
-                targetFilePath,
-                fileMode,
-                FileAccess.Write,
-                FileShare.None);
+            try
+            {
+                using var httpClient = new HttpClient
+                {
+                    Timeout = TimeSpan.FromSeconds(30)
+                };
 
-            await remoteStream.CopyToAsync(localFileStream, cancellationToken);
-            await localFileStream.FlushAsync(cancellationToken);
+                using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                cts.CancelAfter(TimeSpan.FromSeconds(30));
 
-            return targetFilePath;
+                using var response = await httpClient.GetAsync(
+                    uri,
+                    HttpCompletionOption.ResponseHeadersRead,
+                    cts.Token);
+
+                response.EnsureSuccessStatusCode();
+
+                await using (var remoteStream = await response.Content.ReadAsStreamAsync(cts.Token))
+                await using (var localFileStream = new FileStream(
+                    targetFilePath,
+                    fileMode,
+                    FileAccess.Write,
+                    FileShare.None))
+                {
+                    await remoteStream.CopyToAsync(localFileStream, cts.Token);
+                    await localFileStream.FlushAsync(cts.Token);
+                }
+
+                return targetFilePath;
+            }
+            catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+            {
+                throw new TimeoutException(
+                    $"Download oder Schreiben der 3MF-Datei hat das Zeitlimit überschritten: {threeMfUrl}",
+                    ex);
+            }
         }
 
         private static string GetSafeThreeMfFileName(Uri uri, string printerName, string jobId)

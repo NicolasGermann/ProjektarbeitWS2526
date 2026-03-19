@@ -52,7 +52,11 @@ namespace HTW.Images
 
             try
             {
-                using var httpClient = new HttpClient();
+                using var httpClient = new HttpClient
+                {
+                    Timeout = TimeSpan.FromSeconds(30)
+                };
+
                 using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 cts.CancelAfter(TimeSpan.FromSeconds(30));
 
@@ -63,15 +67,16 @@ namespace HTW.Images
 
                 response.EnsureSuccessStatusCode();
 
-                await using var remoteStream = await response.Content.ReadAsStreamAsync(cts.Token);
-                await using var localFileStream = new FileStream(
+                await using (var remoteStream = await response.Content.ReadAsStreamAsync(cts.Token))
+                await using (var localFileStream = new FileStream(
                     tempArchivePath,
                     FileMode.Create,
                     FileAccess.Write,
-                    FileShare.None);
-
-                await remoteStream.CopyToAsync(localFileStream, cts.Token);
-                await localFileStream.FlushAsync(cts.Token);
+                    FileShare.None))
+                {
+                    await remoteStream.CopyToAsync(localFileStream, cts.Token);
+                    await localFileStream.FlushAsync(cts.Token);
+                }
 
                 ZipFile.ExtractToDirectory(tempArchivePath, extractDirectory, overwriteFiles: true);
 
@@ -85,6 +90,12 @@ namespace HTW.Images
 
                 return finalImagePath;
             }
+            catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+            {
+                throw new TimeoutException(
+                    $"Download oder Verarbeitung der 3MF-Vorschau hat das Zeitlimit überschritten: {threeMfUrl}",
+                    ex);
+            }
             finally
             {
                 try
@@ -94,7 +105,7 @@ namespace HTW.Images
                 }
                 catch
                 {
-                    // bewusst schlucken: Hauptoperation war evtl. schon erfolgreich
+                    // Cleanup-Fehler bewusst ignorieren
                 }
             }
         }
