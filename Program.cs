@@ -11,27 +11,34 @@ class Program
 
     static void Main()
     {
-
-        string host = Environment.GetEnvironmentVariable("DBHOST") ?? string.Empty;
-        string token =  Environment.GetEnvironmentVariable("DBTOKEN") ?? string.Empty;
-        string bucket =  Environment.GetEnvironmentVariable("BUCKET") ?? string.Empty;
-        string org =  Environment.GetEnvironmentVariable("ORG") ?? string.Empty;
-        
-        Func<MqttApplicationMessageReceivedEventArgs, Task> printToConsole = t =>
+        try
         {
-            Console.Write(String.Format("Message: {0}", Encoding.UTF8.GetString(t.ApplicationMessage.Payload)));
-            return Task.CompletedTask;
-        };
+            string host = Environment.GetEnvironmentVariable("DBHOST") ?? string.Empty;
+            string token = Environment.GetEnvironmentVariable("DBTOKEN") ?? string.Empty;
+            string bucket = Environment.GetEnvironmentVariable("BUCKET") ?? string.Empty;
+            string org = Environment.GetEnvironmentVariable("ORG") ?? string.Empty;
 
-        foreach (var a in XmlIterator.GetXmlPrinters("/home/docker-user/server/DataBridge-config/printer.xml"))
-        {
-            PrinterFactory.CreatePrinter((string?)a.Element("Name") ?? "").FillFromXml(a).SetMessageFunctionDefault().ConnectToBroker().ConnectToDatabase(new InfluxDBDTO(host,token,bucket,org));
+            var xmlPath = "/home/docker-user/server/DataBridge-config/printer.xml";
+            Console.WriteLine($"Loading printer config from: {xmlPath}");
+
+            foreach (var a in XmlIterator.GetXmlPrinters(xmlPath))
+            {
+                PrinterFactory.CreatePrinter((string?)a.Element("Name") ?? "")
+                    .FillFromXml(a)
+                    .SetMessageFunctionDefault()
+                    .ConnectToBroker()
+                    .ConnectToDatabase(new InfluxDBDTO(host, token, bucket, org));
+            }
+
+            while (true)
+            {
+                Thread.Sleep(1000);
+            }
         }
-
-
-        while (true) {
-            Thread.Sleep(1000);
-         }
-
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Fatal startup error: {ex}");
+            Environment.Exit(1);
+        }
     }
 }
