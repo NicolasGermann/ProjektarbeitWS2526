@@ -23,8 +23,8 @@ class Program
             return Task.CompletedTask;
         };
 
-        //var printers = XmlIterator.GetXmlPrinters("/home/docker-user/server/DataBridge-config/printer.xml")
-        var printers = XmlIterator.GetXmlPrinters("/xml/printer.xml")
+	//var printers = XmlIterator.GetXmlPrinters("/xml/printer.xml")
+        var printers = XmlIterator.GetXmlPrinters("/home/docker-user/server/DataBridge-config/printer.xml")
                     .TryBind(printers =>
                     {
                         foreach (var a in printers)
