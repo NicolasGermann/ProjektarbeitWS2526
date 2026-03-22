@@ -13,8 +13,11 @@ namespace HTW.Printer
         public int Port { get; set; }
         public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
+	public int? lastJobId { get; set; }
+	public string? gCodeState { get; set; }
         public MqttConnector? connector { get; set; }
         public InfluxDBDTO? database { get; set; }
+	public (Thread I1, AutoResetEvent I2)? writerThread { get; set; }
         public Func<MqttApplicationMessageReceivedEventArgs, Task> MessageFunction { get; set; } = t => Task.CompletedTask;
         public Queue<string> Messages { get; set; } = new Queue<string>();
     };
