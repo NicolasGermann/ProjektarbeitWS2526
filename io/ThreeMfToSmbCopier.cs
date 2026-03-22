@@ -1,11 +1,5 @@
-using System;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace Projektarbeit.IO
+namespace HTW.IO
 {
     public sealed class ThreeMfToSmbCopier
     {

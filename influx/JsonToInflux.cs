@@ -1,4 +1,5 @@
 using InfluxDB.Client.Writes;
+using HTW.IO;
 using HTW.Result;
 using System.Text.Json;
 using HTW.Printer;
@@ -34,22 +35,26 @@ namespace HTW.Influx.DataConverter
                         case "gcode_state":
                             if ($"{value}" != pr.gCodeState && $"{value}" == "FINISH")
                             {
-                                JobCsvExporter.buildExportThread("my-bucket"
-                                                 , $"Printer Data: {pr.Name}"
-                                                 , pr
-                                                 , $"{pr.lastJobId}"
-                                ).TryBind(t =>
+                                Result<PrinterDTO>.Some(pr).TryBind(t =>
                                 {
                                     var capsuleThread = new Thread(async _ =>
                                     {
-					try
-					{
+                                        try
+                                        {
                                             Thread.Sleep(500);
-                                            t.Start();
-                                            t.Join();
+                                            var path = await JobCsvExporter.exportCSV("my-bucket"
+											, $"Printer Data: {pr.Name}"
+											, pr
+											, $"{pr.lastJobId}");
+
+                                            var copier = new CSVFileCopier(path);
+
+                                            var result = copier.CopyToJobFolder(pr.Name, $"{pr.lastJobId}");
+                                            Console.WriteLine($"[CsvExporter] Csv Exported and copied.");
+
                                         }
-					catch (Exception e)
-					{
+                                        catch (Exception e)
+                                        {
                                             Console.WriteLine($"[JsonToInflux] CsvExport fehlgeschlagen: {pr.lastJobId}--{e}");
                                         }
                                     });
@@ -57,7 +62,7 @@ namespace HTW.Influx.DataConverter
                                     return t;
 
                                 })
-				.CatchBind(e => Console.WriteLine($"[JsonToInflux] CsvExport fehlgeschlagen. {pr.lastJobId}--{e}"));
+                .CatchBind(e => Console.WriteLine($"[JsonToInflux] CsvExport fehlgeschlagen. {pr.lastJobId}--{e}"));
                             }
                             pr.gCodeState = $"{value}";
                             break;

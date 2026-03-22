@@ -13,11 +13,8 @@ catch (Exception ex)
     Console.Error.WriteLine($"CSV-Kopie fehlgeschlagen: {ex.Message}");
 }
 **/
-using System;
-using System.IO;
-using System.Linq;
 
-namespace Projektarbeit.IO
+namespace HTW.IO
 {
     public sealed class CSVFileCopier
     {
