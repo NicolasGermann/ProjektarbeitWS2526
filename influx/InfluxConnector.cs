@@ -21,7 +21,7 @@ namespace HTW.Influx.Extention
             var dbc = new InfluxDBClient(db.host, db.token);
             var writeApi = dbc.GetWriteApi();
             Console.WriteLine($"{db.host}, {db.token}");
-
+            prn = prn with { database = db with { dbClient = dbc } };
             Thread thread = new Thread(async _ =>
                 {
                     var b = await dbc.PingAsync();
