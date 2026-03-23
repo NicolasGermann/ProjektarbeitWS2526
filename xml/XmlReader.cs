@@ -4,12 +4,11 @@ using HTW.Printer;
 
 namespace HTW.XmlReaderExtention
 {
-	public static class XmlReaderExtention
+	public static class XmlReader
 	{
-		public static Result<PrinterDTO> FillFromXml(this Result<PrinterDTO> pr, XElement printer)
+		public static PrinterDTO FillFromXml(PrinterDTO pr, XElement printer)
 		{
-			if (pr.error) return pr;
-			return Result<PrinterDTO>.Some(new PrinterDTO
+			return new PrinterDTO
 			{
 				Name = (string?)printer?.Element("Name") ?? "",
 				Host = (string?)printer?.Element("Host") ?? "",
@@ -17,10 +16,8 @@ namespace HTW.XmlReaderExtention
 				Port = (int?)printer?.Element("Port") ?? 0,
 				Username = (string?)printer?.Element("Username") ?? "",
 				Password = (string?)printer?.Element("Password") ?? ""
-			});
-
+			};
 		}
-
 	}
 
 	public static class XmlIterator

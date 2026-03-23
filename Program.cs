@@ -4,6 +4,7 @@ using System.Text;
 using MQTTnet;
 using HTW.Influx.Extention;
 using HTW.Influx.Database;
+using HTW.Result;
 
 class Program
 {
@@ -23,18 +24,23 @@ class Program
             return Task.CompletedTask;
         };
 
-	//var printers = XmlIterator.GetXmlPrinters("/xml/printer.xml")
-        var printers = XmlIterator.GetXmlPrinters("/home/docker-user/server/DataBridge-config/printer.xml")
+        //var printers = XmlIterator.GetXmlPrinters("/home/docker-user/server/DataBridge-config/printer.xml")
+	var printers = XmlIterator.GetXmlPrinters("/xml/printer.xml")
                     .TryBind(printers =>
                     {
                         foreach (var a in printers)
                         {
-                            PrinterFactory
-				.CreatePrinter((string?)a.Element("Name") ?? "").TryBind(buildLogger("CreatePrinter"))
-				.FillFromXml(a).TryBind(buildLogger("FillFromXml"))
-				.SetMessageFunctionDefault().TryBind(buildLogger("SetMessageFuncitonDefault"))
-				.ConnectToBroker().TryBind(buildLogger("ConnectToBroker"))
-				.ConnectToDatabase(new InfluxDBDTO(host, token, bucket, org))
+
+                            Result<PrinterDTO>.Some(PrinterFactory.CreatePrinter((string?)a.Element("Name") ?? ""))
+				.TryBind(buildLogger("CreatePrinter"))
+				.TryBind(p => XmlReader.FillFromXml(p, a))
+				.TryBind(buildLogger("FillFromXml"))
+				.TryBind(p => MqttExtention.SetMessageFunctionDefault(p))
+				.TryBind(buildLogger("SetMessageFuncitonDefault"))
+				.TryBind(p => MqttExtention.ConnectToBroker(p))
+				.TryBind(buildLogger("ConnectToBroker"))
+				.TryBind(p => InfluxExtention.ConnectToDatabase(p, new InfluxDBDTO(host, token, bucket, org)))
+				.TryBind(p => InfluxExtention.createDBThread(p))
 				.TryBind(t =>
 				{
 				    t.database!.runnerThread!.Start();

@@ -24,9 +24,9 @@ namespace HTW.Printer
 
     public static class PrinterFactory
     {
-        public static Result<PrinterDTO> CreatePrinter(string Name)
+        public static PrinterDTO CreatePrinter(string Name)
         {
-            return Result<PrinterDTO>.Some(new PrinterDTO() { Name = Name });
+            return new PrinterDTO() { Name = Name };
         }
     }
 }
