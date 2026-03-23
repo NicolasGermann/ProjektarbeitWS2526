@@ -9,6 +9,7 @@ var imagePath = await downloader.DownloadAndExtractLatestPreviewAsync(
 Console.WriteLine(imagePath);
 */
 using System.IO.Compression;
+using HTW.Printer;
 
 namespace HTW.Images
 {
@@ -115,6 +116,33 @@ namespace HTW.Images
             var invalidChars = Path.GetInvalidFileNameChars();
             var cleaned = new string(value.Select(c => invalidChars.Contains(c) ? '_' : c).ToArray());
             return string.IsNullOrWhiteSpace(cleaned) ? "unknown" : cleaned;
+        }
+
+	public static void TryDownloadPreview(PrinterDTO pr)
+        {
+            var url = pr.CurrentThreeMfUrl;
+
+            if (string.IsNullOrWhiteSpace(url))
+                return;
+
+            if (string.Equals(pr.LastDownloadedThreeMfUrl, url, StringComparison.Ordinal))
+                return;
+
+            try
+            {
+                var downloader = new ThreeMfPreviewDownloader("/images");
+                var imagePath = downloader.DownloadAndExtractLatestPreviewAsync(url, pr.Name)
+                    .GetAwaiter()
+                    .GetResult();
+
+                pr.LastDownloadedThreeMfUrl = url;
+
+                Console.WriteLine($"[PREVIEW] printer={pr.Name} serial={pr.ID} image={imagePath}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[PREVIEW] Fehler bei printer={pr.Name} serial={pr.ID}: {ex.Message}");
+            }
         }
     }
 }

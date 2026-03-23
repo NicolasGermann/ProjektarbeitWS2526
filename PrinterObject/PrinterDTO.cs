@@ -17,6 +17,7 @@ namespace HTW.Printer
         public string Password { get; set; } = string.Empty;
         public string? CurrentThreeMfUrl { get; set; }
         public string LastCopiedThreeMfUrl = "";
+        public string LastDownloadedThreeMfUrl = "";
         public int? lastJobId { get; set; }
 	public string? gCodeState { get; set; }
         public MqttConnector? connector { get; set; }

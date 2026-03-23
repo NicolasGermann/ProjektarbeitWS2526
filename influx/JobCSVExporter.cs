@@ -5,6 +5,7 @@ using System.Text;
 using InfluxDB.Client.Core.Flux.Domain;
 using System.Globalization;
 using HTW.IO;
+using HTW.Images;
 
 namespace HTW.Influx.Export
 {
@@ -15,6 +16,22 @@ namespace HTW.Influx.Export
 	    
                             printer.CsvThread = new Thread(async _ =>
                             {
+				try
+				{
+                                    ThreeMfPreviewDownloader.TryDownloadPreview(printer);
+                                }
+				catch
+				{
+				    
+				}
+				try
+				{
+                                    ThreeMfToSmbCopier.TryCopyThreeMfToSmb(printer);
+                                }
+				catch
+				{
+                                    Console.WriteLine($"[ThreeMftoSmb] Copying 3mf File failed");
+                                }
                                 try
                                 {
                                     Thread.Sleep(500);
@@ -26,19 +43,10 @@ namespace HTW.Influx.Export
                                     var copier = new CSVFileCopier(path);
                                     var result = copier.CopyToJobFolder(printer.Name, $"{printer.lastJobId}");
                                     Console.WriteLine($"[CsvExporter] Csv Exported and copied.");
-
                                 }
                                 catch (Exception e)
                                 {
                                     Console.WriteLine($"[JsonToInflux] CsvExport fehlgeschlagen: {printer.lastJobId}--{e}");
-                                }
-				try
-				{
-                                    ThreeMfToSmbCopier.TryCopyThreeMfToSmb(printer);
-                                }
-				catch
-				{
-                                    Console.WriteLine($"[ThreeMftoSmb] Copying 3mf File failed");
                                 }
                             });
 			    return printer;
