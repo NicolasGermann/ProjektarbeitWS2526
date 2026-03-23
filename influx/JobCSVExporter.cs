@@ -4,17 +4,51 @@ using HTW.Printer;
 using System.Text;
 using InfluxDB.Client.Core.Flux.Domain;
 using System.Globalization;
+using HTW.IO;
 
 namespace HTW.Influx.Export
 {
     public static class JobCsvExporter
     {
 
+	public static PrinterDTO createCsvThread(PrinterDTO printer){
+	    
+                            printer.CsvThread = new Thread(async _ =>
+                            {
+                                try
+                                {
+                                    Thread.Sleep(500);
+                                    var path = await JobCsvExporter.exportCSV(printer.database!.bucket
+                                    , $"Printer Data: {printer.Name}"
+                                    , printer
+                                    , $"{printer.lastJobId}");
+
+                                    var copier = new CSVFileCopier(path);
+                                    var result = copier.CopyToJobFolder(printer.Name, $"{printer.lastJobId}");
+                                    Console.WriteLine($"[CsvExporter] Csv Exported and copied.");
+
+                                }
+                                catch (Exception e)
+                                {
+                                    Console.WriteLine($"[JsonToInflux] CsvExport fehlgeschlagen: {printer.lastJobId}--{e}");
+                                }
+				try
+				{
+                                    ThreeMfToSmbCopier.TryCopyThreeMfToSmb(printer);
+                                }
+				catch
+				{
+                                    Console.WriteLine($"[ThreeMftoSmb] Copying 3mf File failed");
+                                }
+                            });
+			    return printer;
+	}
+
         public static async Task<string> exportCSV(string bucket, string measurement, PrinterDTO printer, string jobId, CancellationToken cancellationToken = default, string tempDirectory = "/tmp")
         {
             Func<string, string> EscapeFlux = value => value.Replace("\\", "\\\\").Replace("\"", "\\\"");
 
-            var query = @"from(bucket: ""{EscapeFlux(bucket)}"")
+            var query = @$"from(bucket: ""{EscapeFlux(bucket)}"")
 				|> range(start: 0)
 				|> filter(fn: (r) => r[""_measurement""] == ""{EscapeFlux(measurement)}"")
 				|> filter(fn: (r) => r[""job_id""] == ""{EscapeFlux(jobId)}"")
@@ -53,7 +87,7 @@ namespace HTW.Influx.Export
 		.SelectMany(t => t.Records)
 		.OrderBy(r => r.GetTime())
 		.ToList();
-	    if (!records.Any()) throw new Exception("[JobCsvExporter] Keine Daten für Drucker {printer.Name} und JobId {jobId} gefunden");
+	    if (!records.Any()) throw new Exception($"[JobCsvExporter] Keine Daten für Drucker {printer.Name} und JobId {jobId} gefunden");
 
 	    var safePrinter = SanitizeFileName(printer.Name);
 	    var safeJobId = SanitizeFileName(jobId);

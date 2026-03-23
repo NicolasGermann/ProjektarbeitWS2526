@@ -11,7 +11,12 @@ namespace HTW.Influx.DataConverter
         public static PointData JsonToInfluxPoint(string jsonString, PrinterDTO pr)
         {
             Dictionary<string, Object>? dict = JsonSerializer.Deserialize<Dictionary<string, Object>>(jsonString);
-            if (dict?["print"] != null) dict = ((JsonElement)dict["print"]).Deserialize<Dictionary<string, Object>>();
+	    try {
+		if (dict?["print"] != null) dict = ((JsonElement)dict["print"]).Deserialize<Dictionary<string, Object>>();
+	    }
+	    catch {
+                throw new Exception($"[JsonToPoint]: Opjekt konnte nicht serialisiert werden {dict!.Select(t => $"{t.Key}, {t.Value}").ToArray().ToString()}");
+            }
             if (dict == null) throw (new Exception("Nachricht konnte nicht Serialisiert werden"));
             var output = string.Join(", ", dict.Select(kvp => $"{kvp.Key}={kvp.Value}"));
 
@@ -26,6 +31,9 @@ namespace HTW.Influx.DataConverter
                 pointData = pointData.Field(e.Key, value);
                 switch (e.Key)
                 {
+		    case "url":
+                        pr.CurrentThreeMfUrl = (string)value;
+                        break;
                     case "job_id":
                         pointData.Tag("job_id", $"{(Int32)value}");
                         pr.lastJobId = (Int32)value;
@@ -33,28 +41,9 @@ namespace HTW.Influx.DataConverter
                     case "gcode_state":
                         if ($"{value}" != pr.gCodeState && $"{value}" == "FINISH")
                         {
-                            var capsuleThread = new Thread(async _ =>
-                            {
-                                try
-                                {
-                                    Thread.Sleep(500);
-                                    var path = await JobCsvExporter.exportCSV("my-bucket"
-                                    , $"Printer Data: {pr.Name}"
-                                    , pr
-                                    , $"{pr.lastJobId}");
-
-                                    var copier = new CSVFileCopier(path);
-
-                                    var result = copier.CopyToJobFolder(pr.Name, $"{pr.lastJobId}");
-                                    Console.WriteLine($"[CsvExporter] Csv Exported and copied.");
-
-                                }
-                                catch (Exception e)
-                                {
-                                    Console.WriteLine($"[JsonToInflux] CsvExport fehlgeschlagen: {pr.lastJobId}--{e}");
-                                }
-                            });
-                            capsuleThread.Start();
+                            pr.gCodeState = $"{value}";
+                            if (pr.CsvThread!.IsAlive) break;
+                            pr.CsvThread!.Start();
                         }
                         break;
                 }

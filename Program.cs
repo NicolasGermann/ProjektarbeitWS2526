@@ -5,6 +5,7 @@ using MQTTnet;
 using HTW.Influx.Extention;
 using HTW.Influx.Database;
 using HTW.Result;
+using HTW.Influx.Export;
 
 class Program
 {
@@ -24,8 +25,7 @@ class Program
             return Task.CompletedTask;
         };
 
-        //var printers = XmlIterator.GetXmlPrinters("/home/docker-user/server/DataBridge-config/printer.xml")
-	var printers = XmlIterator.GetXmlPrinters("/xml/printer.xml")
+        var printers = XmlIterator.GetXmlPrinters("/home/docker-user/server/DataBridge-config/printer.xml")
                     .TryBind(printers =>
                     {
                         foreach (var a in printers)
@@ -40,6 +40,9 @@ class Program
 				.TryBind(p => MqttExtention.ConnectToBroker(p))
 				.TryBind(buildLogger("ConnectToBroker"))
 				.TryBind(p => InfluxExtention.ConnectToDatabase(p, new InfluxDBDTO(host, token, bucket, org)))
+				.TryBind(buildLogger("ConnectToDatabase"))
+				.TryBind(p => JobCsvExporter.createCsvThread(p))
+				.TryBind(buildLogger("createCsvThread"))
 				.TryBind(p => InfluxExtention.createDBThread(p))
 				.TryBind(t =>
 				{

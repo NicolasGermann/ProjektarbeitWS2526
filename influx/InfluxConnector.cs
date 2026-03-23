@@ -15,9 +15,10 @@ namespace HTW.Influx.Extention
     {
         public static PrinterDTO ConnectToDatabase(PrinterDTO pr, InfluxDBDTO db)
         {
-	    var dbc = new InfluxDBClient(db.host, db.token);
-	    Console.WriteLine($"{db.host}, {db.token}");
-	    return pr with { database = db with { dbClient = dbc } };
+            var dbc = new InfluxDBClient(db.host, db.token);
+            Console.WriteLine($"{db.host}, {db.token}");
+            pr.database = db with { dbClient = dbc };
+            return pr;
         }
 
         public static PrinterDTO createDBThread(PrinterDTO pr)
@@ -35,14 +36,25 @@ namespace HTW.Influx.Extention
                         if (pr.Messages.Count() > 0)
                         {
                             var msg = pr.Messages.Dequeue();
-                            PointData dataPoint = JsonToInflux.JsonToInfluxPoint(msg, pr);
-			    writeApi.WritePoint(dataPoint, db.bucket, db.org);
-			    writeApi.Flush();
-			    Console.WriteLine($"[Influx] datenpunkt geschrieben: {pr.Name},{dataPoint}");
+                            PointData dataPoint;
+                            try
+                            {
+                                dataPoint = JsonToInflux.JsonToInfluxPoint(msg, pr);
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine($"[Influx] Punkt konnte nicht konvertiert werden: {e}");
+                                continue;
+                            }
+                            writeApi.WritePoint(dataPoint, db.bucket, db.org);
+                            writeApi.Flush();
+                            Console.WriteLine($"[Influx] datenpunkt geschrieben: {pr.Name},{dataPoint}");
                         }
                     }
                 });
-            return pr with { database = db with { runnerThread = thread } };
+
+            pr.database = db with { runnerThread = thread };
+            return pr;
         }
     }
 }

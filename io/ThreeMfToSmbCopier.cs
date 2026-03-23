@@ -1,3 +1,4 @@
+using HTW.Printer;
 
 namespace HTW.IO
 {
@@ -5,7 +6,7 @@ namespace HTW.IO
     {
         private readonly string _targetRootPath;
 
-        public ThreeMfToSmbCopier(string? targetRootPath = null)
+        private ThreeMfToSmbCopier(string? targetRootPath = null)
         {
             _targetRootPath = !string.IsNullOrWhiteSpace(targetRootPath)
                 ? targetRootPath
@@ -14,25 +15,13 @@ namespace HTW.IO
                         "Kein Zielpfad gesetzt. Übergib targetRootPath oder setze JOB_CSV_TARGET_ROOT.");
         }
 
-        public async Task<string> CopyFromUrlToJobFolderAsync(
+        private async Task<string> CopyFromUrlToJobFolderAsync(
             string threeMfUrl,
             string printerName,
             string jobId,
             bool overwrite = true,
             CancellationToken cancellationToken = default)
         {
-            if (string.IsNullOrWhiteSpace(threeMfUrl))
-                throw new ArgumentException("threeMfUrl darf nicht leer sein.", nameof(threeMfUrl));
-
-            if (string.IsNullOrWhiteSpace(printerName))
-                throw new ArgumentException("printerName darf nicht leer sein.", nameof(printerName));
-
-            if (string.IsNullOrWhiteSpace(jobId))
-                throw new ArgumentException("jobId darf nicht leer sein.", nameof(jobId));
-
-            if (!Uri.TryCreate(threeMfUrl, UriKind.Absolute, out var uri))
-                throw new ArgumentException("threeMfUrl ist keine gültige absolute URL.", nameof(threeMfUrl));
-
             EnsureTargetRootUsable(_targetRootPath);
 
             var targetDirectory = Path.Combine(
@@ -41,6 +30,9 @@ namespace HTW.IO
                 SanitizeFileName(jobId));
 
             Directory.CreateDirectory(targetDirectory);
+
+            if (!Uri.TryCreate(threeMfUrl, UriKind.Absolute, out var uri))
+                throw new ArgumentException("threeMfUrl ist keine gültige absolute URL.", nameof(threeMfUrl));
 
             var fileName = GetSafeThreeMfFileName(uri, printerName, jobId);
             var targetFilePath = Path.Combine(targetDirectory, fileName);
@@ -127,5 +119,42 @@ namespace HTW.IO
             var cleaned = new string(value.Select(c => invalidChars.Contains(c) ? '_' : c).ToArray());
             return string.IsNullOrWhiteSpace(cleaned) ? "unknown" : cleaned;
         }
+
+
+        public static void TryCopyThreeMfToSmb(PrinterDTO pr)
+        {
+            var url = pr.CurrentThreeMfUrl ?? throw new Exception("[3Mf] url nicht gesetzt.");
+            var iJobId = pr.lastJobId ?? throw new Exception("[3Mf] lastJobId nicht gesetzt.");
+            string jobId = $"{iJobId}";
+            var copyKey = $"{jobId}|{url}";
+
+            if (string.Equals(pr.LastCopiedThreeMfUrl, copyKey, StringComparison.Ordinal))
+                return;
+
+            try
+            {
+                var copier = new ThreeMfToSmbCopier();
+                var targetPath = copier
+                    .CopyFromUrlToJobFolderAsync(url, pr.Name, jobId)
+                    .GetAwaiter()
+                    .GetResult();
+
+                pr.LastCopiedThreeMfUrl = copyKey;
+
+                Console.WriteLine(
+                    $"[3MF-SMB] printer={pr.Name} serial={pr.ID} job_id={jobId} file={targetPath}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(
+                    $"[3MF-SMB] Fehler bei printer={pr.Name} serial={pr.ID} job_id={jobId}: {ex.Message}");
+            }
+        }
+
+        internal static void TryCopyThreeMfToSmb()
+        {
+            throw new NotImplementedException();
+        }
     }
+
 }

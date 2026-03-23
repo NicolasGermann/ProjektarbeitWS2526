@@ -14,15 +14,16 @@ public static class MqttExtention
             pr.Messages.Enqueue(Encoding.UTF8.GetString(t.ApplicationMessage.Payload));
             return Task.CompletedTask;
         };
-        return pr with { MessageFunction = SaveToStack };
+        pr.MessageFunction = SaveToStack;
+        return pr ;
     }
 
     static public PrinterDTO ConnectToBroker(this PrinterDTO pr)
     {
-        var prnew = pr with { connector = new MqttConnector(pr.Host, pr.Port, pr.Username, pr.Password, pr.MessageFunction) };
-	prnew.connector!.ConnectAsync().ContinueWith(t => prnew.connector.SubscribeAsync(String.Format("device/{0}/report", pr.ID)));
+        pr.connector = new MqttConnector(pr.Host, pr.Port, pr.Username, pr.Password, pr.MessageFunction);
+	pr.connector!.ConnectAsync().ContinueWith(t => pr.connector.SubscribeAsync(String.Format("device/{0}/report", pr.ID)));
 	Console.WriteLine("Verbunden");
-        return prnew;
+        return pr;
     }
 
     static public Result<PrinterDTO> SetMessageFunction(this Result<PrinterDTO> pr, Func<MqttApplicationMessageReceivedEventArgs, Task> messFunc)
