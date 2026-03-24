@@ -141,7 +141,7 @@ namespace HTW.Images
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[PREVIEW] Fehler bei printer={pr.Name} serial={pr.ID}: {ex.Message}");
+                Console.WriteLine($"[Error]({DateTime.UtcNow})Preview: Fehler bei printer={pr.Name} serial={pr.ID}: {ex.Message}");
             }
         }
     }

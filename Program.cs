@@ -50,11 +50,11 @@ class Program
 				    return t;
 				})
 				.TryBind(buildLogger("ConnectToDatabase"))
-				.CatchBind(e => Console.WriteLine($"[Fehler]: {e}"));
+				.CatchBind(e => Console.WriteLine($"[Error]({DateTime.UtcNow}): {e}"));
                         }
                         return printers;
-                    });
-        if (printers.error) Console.WriteLine($"[Fehler]: {printers.UnpackException()!}");
+                    })
+		    .CatchBind(e => Console.WriteLine($"[Error]({DateTime.UtcNow}): {e}"));
 
         while (true) { Thread.Sleep(1); }
 

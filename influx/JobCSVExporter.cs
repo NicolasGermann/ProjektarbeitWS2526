@@ -46,7 +46,7 @@ namespace HTW.Influx.Export
                                 }
                                 catch (Exception e)
                                 {
-                                    Console.WriteLine($"[JsonToInflux] CsvExport fehlgeschlagen: {printer.lastJobId}--{e}");
+                                    Console.WriteLine($"[Error]({DateTime.UtcNow})JsonToInflux CsvExport fehlgeschlagen: {printer.lastJobId}--{e}");
                                 }
                             });
 			    return printer;
@@ -95,7 +95,7 @@ namespace HTW.Influx.Export
 		.SelectMany(t => t.Records)
 		.OrderBy(r => r.GetTime())
 		.ToList();
-	    if (!records.Any()) throw new Exception($"[JobCsvExporter] Keine Daten für Drucker {printer.Name} und JobId {jobId} gefunden");
+	    if (!records.Any()) throw new Exception($"[Error]({DateTime.UtcNow})JobCsvExporter Keine Daten für Drucker {printer.Name} und JobId {jobId} gefunden");
 
 	    var safePrinter = SanitizeFileName(printer.Name);
 	    var safeJobId = SanitizeFileName(jobId);

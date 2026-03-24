@@ -43,12 +43,12 @@ namespace HTW.Influx.Extention
                             }
                             catch (Exception e)
                             {
-                                Console.WriteLine($"[Influx] Punkt konnte nicht konvertiert werden: {e}");
+                                Console.WriteLine($"[Error]({DateTime.UtcNow})Influx: Punkt konnte nicht konvertiert werden: {e}");
                                 continue;
                             }
                             writeApi.WritePoint(dataPoint, db.bucket, db.org);
                             writeApi.Flush();
-                            Console.WriteLine($"[Influx] datenpunkt geschrieben: {pr.Name},{dataPoint}");
+                            Console.WriteLine($"[Influx]datenpunkt geschrieben: {pr.Name},{dataPoint}");
                         }
                     }
                 });

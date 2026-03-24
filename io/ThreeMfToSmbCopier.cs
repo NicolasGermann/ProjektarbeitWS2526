@@ -148,7 +148,7 @@ namespace HTW.IO
             catch (Exception ex)
             {
                 Console.WriteLine(
-                    $"[3MF-SMB] Fehler bei printer={pr.Name} serial={pr.ID} job_id={jobId}: {ex.Message}");
+                    $"[Error]({DateTime.UtcNow})3MF-SMB Fehler bei printer={pr.Name} serial={pr.ID} job_id={jobId}: {ex.Message}");
             }
         }
 
