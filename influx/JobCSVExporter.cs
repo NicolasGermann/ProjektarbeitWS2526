@@ -41,7 +41,7 @@ namespace HTW.Influx.Export
                                     );
 
                                     var copier = new CSVFileCopier(path);
-                                    var result = copier.CopyToJobFolder(printer.Name, $"{printer.lastJobId}");
+                                    var result = copier.CopyToJobFolder(printer.Name, printer.lastJobId?.ToString() ?? throw new Exception("[Error]({DateTime.UtcNow})CopytoJobFolder: JobId leer"));
                                     Console.WriteLine($"[CsvExporter] Csv Exported and copied.");
                                 }
                                 catch (Exception e)
