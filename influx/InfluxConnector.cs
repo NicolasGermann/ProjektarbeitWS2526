@@ -3,7 +3,6 @@ using HTW.Influx.DataConverter;
 using HTW.Printer;
 using HTW.Result;
 using InfluxDB.Client;
-using InfluxDB.Client.Writes;
 
 namespace HTW.Influx.Database
 {
@@ -42,7 +41,7 @@ namespace HTW.Influx.Extention
                             {
                                 writeApi.WritePoint(dp, db.bucket, db.org);
                                 writeApi.Flush();
-                                Console.WriteLine($"[Influx]datenpunkt geschrieben: {pr.Name},{dp}");
+                                Console.WriteLine($"[Influx]datenpunkt geschrieben: {pr.Name}-{pr.lastJobId?.ToString() ?? "Keine JobId empfangen"}-,{dp.ToLineProtocol().Replace("\r", "@").Replace("\n", "@")}");
                                 return dp;
                             })
 			    .CatchBind(e =>
