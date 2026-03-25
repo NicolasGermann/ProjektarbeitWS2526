@@ -29,7 +29,6 @@ namespace HTW.Influx.DataConverter
             {
                 var (type, value) = ParseValue(e.Value.ToString()!);
                 pointData = pointData.Field(e.Key, value);
-                Console.WriteLine($"Jobid: {pr.lastJobId?.ToString()}");
                 switch (e.Key)
                 {
 		    case "url":
