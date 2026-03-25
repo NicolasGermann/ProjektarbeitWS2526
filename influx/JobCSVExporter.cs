@@ -20,17 +20,17 @@ namespace HTW.Influx.Export
 				{
                                     ThreeMfPreviewDownloader.TryDownloadPreview(printer);
                                 }
-				catch
+				catch (Exception e)
 				{
-				    
+                                    Console.WriteLine($"[Error]({DateTime.UtcNow})3mfDownload: {e}");
 				}
 				try
 				{
                                     ThreeMfToSmbCopier.TryCopyThreeMfToSmb(printer);
                                 }
-				catch
+				catch (Exception e)
 				{
-                                    Console.WriteLine($"[ThreeMftoSmb] Copying 3mf File failed");
+                                    Console.WriteLine($"[Error]({DateTime.UtcNow})3mfCopy: {e}");
                                 }
                                 try
                                 {

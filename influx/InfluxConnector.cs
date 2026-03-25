@@ -1,6 +1,7 @@
 using HTW.Influx.Database;
 using HTW.Influx.DataConverter;
 using HTW.Printer;
+using HTW.Result;
 using InfluxDB.Client;
 using InfluxDB.Client.Writes;
 
@@ -35,20 +36,19 @@ namespace HTW.Influx.Extention
                         Thread.Sleep(10);
                         if (pr.Messages.Count() > 0)
                         {
-                            var msg = pr.Messages.Dequeue();
-                            PointData dataPoint;
-                            try
+                            var msg = Result<string>.Some(pr.Messages.Dequeue());
+                            msg.TryBind(m => JsonToInflux.JsonToInfluxPoint(m, pr))
+                            .TryBind(dp =>
                             {
-                                dataPoint = JsonToInflux.JsonToInfluxPoint(msg, pr);
-                            }
-                            catch (Exception e)
-                            {
-                                Console.WriteLine($"[Error]({DateTime.UtcNow})Influx: Punkt konnte nicht konvertiert werden: {e}");
-                                continue;
-                            }
-                            writeApi.WritePoint(dataPoint, db.bucket, db.org);
-                            writeApi.Flush();
-                            Console.WriteLine($"[Influx]datenpunkt geschrieben: {pr.Name},{dataPoint}");
+                                writeApi.WritePoint(dp, db.bucket, db.org);
+                                writeApi.Flush();
+                                Console.WriteLine($"[Influx]datenpunkt geschrieben: {pr.Name},{dp}");
+                                return dp;
+                            })
+			    .CatchBind(e =>
+			    {
+				Console.WriteLine($"[Error]({DateTime.UtcNow})Influx: Punkt konnte nicht konvertiert werden: {e}");
+			    });
                         }
                     }
                 });
