@@ -38,7 +38,7 @@ namespace HTW.Influx.Export
                                     var path = await JobCsvExporter.exportCSV(printer.database!.bucket
                                     , $"Printer Data: {printer.Name}"
                                     , printer
-                                    , $"{printer.lastJobId}");
+                                    );
 
                                     var copier = new CSVFileCopier(path);
                                     var result = copier.CopyToJobFolder(printer.Name, $"{printer.lastJobId}");
@@ -52,8 +52,11 @@ namespace HTW.Influx.Export
 			    return printer;
 	}
 
-        public static async Task<string> exportCSV(string bucket, string measurement, PrinterDTO printer, string jobId, CancellationToken cancellationToken = default, string tempDirectory = "/tmp")
+        public static async Task<string> exportCSV(string bucket, string measurement, PrinterDTO printer, CancellationToken cancellationToken = default, string tempDirectory = "/tmp")
         {
+
+            var jobId = printer.lastJobId?.ToString() ?? throw new Exception($"[Error]({DateTime.UtcNow})exportCsv: jobId besitzt keinen Wert.");
+
             Func<string, string> EscapeFlux = value => value.Replace("\\", "\\\\").Replace("\"", "\\\"");
 
             var query = @$"from(bucket: ""{EscapeFlux(bucket)}"")
@@ -123,6 +126,7 @@ namespace HTW.Influx.Export
 		await writer.WriteLineAsync(row);
 	    }
 	    await writer.FlushAsync();
+            Console.WriteLine("[CsvExport]erfolgreich exportiert.");
             return filePath;
         }
     }

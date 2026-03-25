@@ -34,6 +34,9 @@ namespace HTW.Influx.DataConverter
 		    case "url":
                         pr.CurrentThreeMfUrl = (string)value;
                         break;
+		    case "subtask_id":
+                        pointData.Tag("subtask_id", $"{(Int32)value}");
+                        break;
                     case "job_id":
                         pointData.Tag("job_id", $"{(Int32)value}");
                         pr.lastJobId = (Int32)value;
