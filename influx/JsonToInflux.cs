@@ -1,8 +1,6 @@
 using InfluxDB.Client.Writes;
-using HTW.IO;
 using System.Text.Json;
 using HTW.Printer;
-using HTW.Influx.Export;
 
 namespace HTW.Influx.DataConverter
 {
@@ -11,10 +9,12 @@ namespace HTW.Influx.DataConverter
         public static PointData JsonToInfluxPoint(string jsonString, PrinterDTO pr)
         {
             Dictionary<string, Object>? dict = JsonSerializer.Deserialize<Dictionary<string, Object>>(jsonString);
-	    try {
-		if (dict?["print"] != null) dict = ((JsonElement)dict["print"]).Deserialize<Dictionary<string, Object>>();
-	    }
-	    catch {
+            try
+            {
+                if (dict?["print"] != null) dict = ((JsonElement)dict["print"]).Deserialize<Dictionary<string, Object>>();
+            }
+            catch
+            {
                 throw new Exception($"[JsonToPoint]: Opjekt konnte nicht serialisiert werden {dict!.Select(t => $"{t.Key}, {t.Value}").ToArray().ToString()}");
             }
             if (dict == null) throw (new Exception("Nachricht konnte nicht Serialisiert werden"));
@@ -31,18 +31,18 @@ namespace HTW.Influx.DataConverter
                 pointData = pointData.Field(e.Key, value);
                 switch (e.Key)
                 {
-		    case "url":
-                        pr.CurrentThreeMfUrl = (string)value;
+                    case "url":
+                        pr.CurrentThreeMfUrl = Convert.ToString(value);
                         break;
-		    case "subtask_id":
-                        pointData.Tag("subtask_id", $"{(Int32)value}");
+                    case "subtask_id":
+                        pointData.Tag("subtask_id", $"{Convert.ToString(value)}");
                         break;
                     case "job_id":
-                        pointData.Tag("job_id", $"{(Int32)value}");
-                        pr.lastJobId = (Int32)value;
+                        pointData.Tag("job_id", $"{Convert.ToString(value)}");
+                        pr.lastJobId = Convert.ToString(value);
                         break;
                     case "gcode_state":
-                        if ($"{value}" != pr.gCodeState && $"{value}" == "FINISH")
+                        if ($"{Convert.ToString(value)}" != pr.gCodeState && $"{Convert.ToString(value)}" == "FINISH")
                         {
                             pr.gCodeState = $"{value}";
                             if (pr.CsvThread!.IsAlive) break;

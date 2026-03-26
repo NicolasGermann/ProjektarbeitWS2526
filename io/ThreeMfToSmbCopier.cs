@@ -125,7 +125,7 @@ namespace HTW.IO
         public static void TryCopyThreeMfToSmb(PrinterDTO pr)
         {
             var url = pr.CurrentThreeMfUrl ?? throw new Exception("[3Mf] url nicht gesetzt.");
-            var jobId = pr.lastJobId?.ToString() ?? throw new Exception("[3Mf] lastJobId nicht gesetzt.");
+            var jobId = pr.lastJobId ?? throw new Exception("[3Mf] lastJobId nicht gesetzt.");
             var copyKey = $"{jobId}|{url}";
 
             if (string.Equals(pr.LastCopiedThreeMfUrl, copyKey, StringComparison.Ordinal))

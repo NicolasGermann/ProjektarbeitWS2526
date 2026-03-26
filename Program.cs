@@ -24,7 +24,7 @@ class Program
             Console.Write(String.Format("Message: {0}", Encoding.UTF8.GetString(t.ApplicationMessage.Payload)));
             return Task.CompletedTask;
         };
-
+	
         var printers = XmlIterator.GetXmlPrinters("/home/docker-user/server/DataBridge-config/printer.xml")
                     .TryBind(printers =>
                     {
@@ -56,7 +56,9 @@ class Program
                     })
 		    .CatchBind(e => Console.WriteLine($"[Error]({DateTime.UtcNow}): {e}"));
 
-        while (true) { Thread.Sleep(1); }
+        while (true) {
+	    Thread.Sleep(1);
+        }
 
     }
     public static Func<PrinterDTO, PrinterDTO> buildLogger(string s)

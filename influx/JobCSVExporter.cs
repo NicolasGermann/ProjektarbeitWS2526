@@ -41,7 +41,7 @@ namespace HTW.Influx.Export
                                     );
 
                                     var copier = new CSVFileCopier(path);
-                                    var result = copier.CopyToJobFolder(printer.Name, printer.lastJobId?.ToString() ?? throw new Exception("[Error]({DateTime.UtcNow})CopytoJobFolder: JobId leer"));
+                                    var result = copier.CopyToJobFolder(printer.Name, printer.lastJobId ?? throw new Exception("[Error]({DateTime.UtcNow})CopytoJobFolder: JobId leer"));
                                     Console.WriteLine($"[CsvExporter] Csv Exported and copied.");
                                 }
                                 catch (Exception e)
@@ -55,7 +55,7 @@ namespace HTW.Influx.Export
         public static async Task<string> exportCSV(string bucket, string measurement, PrinterDTO printer, CancellationToken cancellationToken = default, string tempDirectory = "/tmp")
         {
 
-            var jobId = printer.lastJobId?.ToString() ?? throw new Exception($"[Error]({DateTime.UtcNow})exportCsv: jobId besitzt keinen Wert.");
+            var jobId = printer.lastJobId ?? throw new Exception($"[Error]({DateTime.UtcNow})exportCsv: jobId besitzt keinen Wert.");
 
             Func<string, string> EscapeFlux = value => value.Replace("\\", "\\\\").Replace("\"", "\\\"");
 

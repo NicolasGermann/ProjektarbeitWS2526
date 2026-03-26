@@ -18,7 +18,7 @@ namespace HTW.Printer
         public string? CurrentThreeMfUrl { get; set; }
         public string LastCopiedThreeMfUrl = "";
         public string LastDownloadedThreeMfUrl = "";
-        public int? lastJobId { get; set; }
+        public string? lastJobId { get; set; }
 	public string? gCodeState { get; set; }
         public MqttConnector? connector { get; set; }
         public InfluxDBDTO? database { get; set; }

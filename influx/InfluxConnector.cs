@@ -41,7 +41,14 @@ namespace HTW.Influx.Extention
                             {
                                 writeApi.WritePoint(dp, db.bucket, db.org);
                                 writeApi.Flush();
-                                Console.WriteLine($"[Influx]datenpunkt geschrieben: {pr.Name}-{pr.lastJobId?.ToString() ?? "Keine JobId empfangen"}-,{dp.ToLineProtocol().Replace("\r", "@").Replace("\n", "@")}");
+                                Console.WriteLine($"[Influx]datenpunkt geschrieben: {pr.Name}-{pr.lastJobId ?? "Keine JobId empfangen"}-,{dp.ToLineProtocol().Replace("\r", "@").Replace("\n", "@")}");
+                                return dp;
+                            })
+			    .TryBind(dp =>
+			    {
+                                Directory.CreateDirectory("/logs");
+                                File.AppendAllText($"/logs/{pr.lastJobId ?? "NoID"}.txt", dp.ToLineProtocol());
+                                File.AppendAllText($"/logs/{pr.lastJobId ?? "NoID"}.txt", "\n");
                                 return dp;
                             })
 			    .CatchBind(e =>
