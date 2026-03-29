@@ -30,7 +30,6 @@ class Program
                     {
                         foreach (var a in printers)
                         {
-
                             Result<PrinterDTO>.Some(PrinterFactory.CreatePrinter((string?)a.Element("Name") ?? ""))
 				.TryBind(buildLogger("CreatePrinter"))
 				.TryBind(p => XmlReader.FillFromXml(p, a))
@@ -41,8 +40,13 @@ class Program
 				.TryBind(buildLogger("ConnectToBroker"))
 				.TryBind(p => InfluxExtention.ConnectToDatabase(p, new InfluxDBDTO(host, token, bucket, org)))
 				.TryBind(buildLogger("ConnectToDatabase"))
-				.TryBind(p => JobCsvExporter.createCsvThread(p))
-				.TryBind(buildLogger("createCsvThread"))
+				.TryBind(p => JobCsvExporter.createExportThread(p))
+				.TryBind(p =>
+				{
+				    p.ExportThread!.Value.Item1.Start();
+				    return p;
+				})
+				.TryBind(buildLogger("createExportThread"))
 				.TryBind(p => InfluxExtention.createDBThread(p))
 				.TryBind(t =>
 				{

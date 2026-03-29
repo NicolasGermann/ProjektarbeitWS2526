@@ -1,5 +1,3 @@
-using HTW.Result;
-using HTW.Influx.Database;
 using HTW.Printer;
 using System.Text;
 using InfluxDB.Client.Core.Flux.Domain;
@@ -12,45 +10,75 @@ namespace HTW.Influx.Export
     public static class JobCsvExporter
     {
 
-	public static PrinterDTO createCsvThread(PrinterDTO printer){
-	    
-                            printer.CsvThread = new Thread(async _ =>
-                            {
-				try
-				{
-                                    ThreeMfPreviewDownloader.TryDownloadPreview(printer);
-                                }
-				catch (Exception e)
-				{
-                                    Console.WriteLine($"[Error]({DateTime.UtcNow})3mfDownload: {e}");
-				}
-				try
-				{
-                                    ThreeMfToSmbCopier.TryCopyThreeMfToSmb(printer);
-                                }
-				catch (Exception e)
-				{
-                                    Console.WriteLine($"[Error]({DateTime.UtcNow})3mfCopy: {e}");
-                                }
-                                try
-                                {
-                                    Thread.Sleep(500);
-                                    var path = await JobCsvExporter.exportCSV(printer.database!.bucket
-                                    , $"Printer Data: {printer.Name}"
-                                    , printer
-                                    );
+        public static async void runExportJobs(PrinterDTO printer)
+        {
 
-                                    var copier = new CSVFileCopier(path);
-                                    var result = copier.CopyToJobFolder(printer.Name, printer.lastJobId ?? throw new Exception("[Error]({DateTime.UtcNow})CopytoJobFolder: JobId leer"));
-                                    Console.WriteLine($"[CsvExporter] Csv Exported and copied.");
-                                }
-                                catch (Exception e)
+            await Task.Run(async () =>
                                 {
-                                    Console.WriteLine($"[Error]({DateTime.UtcNow})JsonToInflux CsvExport fehlgeschlagen: {printer.lastJobId}--{e}");
-                                }
-                            });
-			    return printer;
-	}
+                                    if (printer.lastJobId == null) return;
+                                    try
+                                    {
+                                        Thread.Sleep(500);
+                                        var path = await JobCsvExporter.exportCSV(printer.database!.bucket
+                                        , $"Printer Data: {printer.Name}"
+                                        , printer
+                                        );
+
+                                        var copier = new CSVFileCopier(path);
+                                        var result = copier.CopyToJobFolder(printer.Name, printer.lastJobId ?? throw new Exception("[Error]({DateTime.UtcNow})CopytoJobFolder: JobId leer"));
+                                        Console.WriteLine($"[CsvExporter] Csv Exported and copied.");
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Console.WriteLine($"[Error]({DateTime.UtcNow})JsonToInflux CsvExport fehlgeschlagen: {printer.lastJobId}--{e}");
+                                    }
+                                    if (printer.CurrentThreeMfUrl == null) return;
+                                    try
+                                    {
+                                        ThreeMfPreviewDownloader.TryDownloadPreview(printer);
+                                    }
+
+                                    catch (Exception e)
+                                    {
+                                        Console.WriteLine($"[Error]({DateTime.UtcNow})3mfDownload: {e}");
+                                    }
+                                    try
+                                    {
+                                        ThreeMfToSmbCopier.TryCopyThreeMfToSmb(printer);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Console.WriteLine($"[Error]({DateTime.UtcNow})3mfCopy: {e}");
+                                    }
+
+                                }).WaitAsync(TimeSpan.FromSeconds(100));
+        }
+
+        public static PrinterDTO createExportThread(PrinterDTO pr)
+        {
+            var queue = new Queue<string>();
+            var retThread = new Thread(async () =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(TimeSpan.FromMinutes(1));
+                    if (queue.Any())
+                    {
+                        try
+                        {
+                            var obj = queue.Dequeue();
+                            File.Move($"/logs/{obj}.csv", $"/mnt/job-csv/{pr.Name}/{obj}/{pr.Name}_{obj}.csv");
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine($"[Error]({DateTime.UtcNow}:mvFile {e})");
+                        }
+                    }
+                }
+            });
+            pr.ExportThread = (retThread, queue);
+            return pr;
+        }
 
         public static async Task<string> exportCSV(string bucket, string measurement, PrinterDTO printer, CancellationToken cancellationToken = default, string tempDirectory = "/tmp")
         {
@@ -69,63 +97,63 @@ namespace HTW.Influx.Export
             if (printer.database == null) throw (new Exception("[JobCsvExporter] es wurde keine Datenbank gesetzt."));
             if (printer.database.dbClient == null) throw (new Exception("[JobCsvExporter] es wurde keine DatenbankClient gesetzt."));
 
-	    Func<string, string> SanitizeFileName = value =>
-	    {
-		var cleaned = new string(value.Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c).ToArray());
-		return string.IsNullOrWhiteSpace(cleaned) ? "unknown" : cleaned;
-	    };
-	    Func<(FluxRecord, string), string?> GetValue = tup =>
-	    {
-		return tup.Item1.Values.TryGetValue(tup.Item2, out var value)
-		    ? value?.ToString()
-		    : null;
-	    };
-	    Func<object?, string> ConvertValue = value =>
-	    {
-		return value switch
-		{
-		    null => "",
-		    DateTime dt => dt.ToString("O", CultureInfo.InvariantCulture),
-		    IFormattable f => f.ToString(null, CultureInfo.InvariantCulture),
-		    _ => value.ToString() ?? ""
-		};
-	    };
-	    Func<string, string> EscapeCsv = i => (i.Contains(';') || i.Contains('"') || i.Contains('\n') || i.Contains('\r')) ? "\"" + i.Replace("\"", "\"\"") + "\"" : i;
+            Func<string, string> SanitizeFileName = value =>
+            {
+                var cleaned = new string(value.Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c).ToArray());
+                return string.IsNullOrWhiteSpace(cleaned) ? "unknown" : cleaned;
+            };
+            Func<(FluxRecord, string), string?> GetValue = tup =>
+            {
+                return tup.Item1.Values.TryGetValue(tup.Item2, out var value)
+                ? value?.ToString()
+                : null;
+            };
+            Func<object?, string> ConvertValue = value =>
+            {
+                return value switch
+                {
+                    null => "",
+                    DateTime dt => dt.ToString("O", CultureInfo.InvariantCulture),
+                    IFormattable f => f.ToString(null, CultureInfo.InvariantCulture),
+                    _ => value.ToString() ?? ""
+                };
+            };
+            Func<string, string> EscapeCsv = i => (i.Contains(';') || i.Contains('"') || i.Contains('\n') || i.Contains('\r')) ? "\"" + i.Replace("\"", "\"\"") + "\"" : i;
 
-	    var queryApi = printer.database.dbClient.GetQueryApi();
-	    var tables = await queryApi.QueryAsync(query , printer.database!.org!, cancellationToken);
-	    var records = tables
-		.SelectMany(t => t.Records)
-		.OrderBy(r => r.GetTime())
-		.ToList();
-	    if (!records.Any()) throw new Exception($"[Error]({DateTime.UtcNow})JobCsvExporter Keine Daten für Drucker {printer.Name} und JobId {jobId} gefunden");
+            var queryApi = printer.database.dbClient.GetQueryApi();
+            var tables = await queryApi.QueryAsync(query, printer.database!.org!, cancellationToken);
+            var records = tables
+            .SelectMany(t => t.Records)
+            .OrderBy(r => r.GetTime())
+            .ToList();
+            if (!records.Any()) throw new Exception($"[Error]({DateTime.UtcNow})JobCsvExporter Keine Daten für Drucker {printer.Name} und JobId {jobId} gefunden");
 
-	    var safePrinter = SanitizeFileName(printer.Name);
-	    var safeJobId = SanitizeFileName(jobId);
-	    var filePath = Path.Combine(tempDirectory, $"{safePrinter}_{safeJobId}.csv");
+            var safePrinter = SanitizeFileName(printer.Name);
+            var safeJobId = SanitizeFileName(jobId);
+            var filePath = Path.Combine(tempDirectory, $"{safePrinter}_{safeJobId}.csv");
 
-	    await using var writer = new StreamWriter(filePath, false, new UTF8Encoding(false));
-	    await writer.WriteLineAsync("time;measurement;field;value;job_id");
+            await using var writer = new StreamWriter(filePath, false, new UTF8Encoding(false));
+            await writer.WriteLineAsync("time;measurement;field;value;job_id");
 
-	    var mMent = $"Printer Data: {printer.Name}";
-	    foreach (var record in records)
-	    {
-		var time = record.GetTime()?.ToDateTimeUtc().ToString("O", CultureInfo.InvariantCulture) ?? "";
-		var measurementName = GetValue((record, "_measurement")) ?? mMent;
-		var field = record.GetField() ?? "";
-		var value = ConvertValue(record.GetValue());
-		var resolvedJobId = GetValue((record, "job_id")) ?? jobId;
+            var mMent = $"Printer Data: {printer.Name}";
+            foreach (var record in records)
+            {
+                var time = record.GetTime()?.ToDateTimeUtc().ToString("O", CultureInfo.InvariantCulture) ?? "";
+                var measurementName = GetValue((record, "_measurement")) ?? mMent;
+                var field = record.GetField() ?? "";
+                var value = ConvertValue(record.GetValue());
+                var resolvedJobId = GetValue((record, "job_id")) ?? jobId;
 
-		var row = string.Join(";",
-		EscapeCsv(time),
-		EscapeCsv(measurementName),
-		EscapeCsv(field),
-		EscapeCsv(value),
-		EscapeCsv(resolvedJobId));
+                var row = string.Join(";",
+                EscapeCsv(time),
+                EscapeCsv(measurementName),
+                EscapeCsv(field),
+                EscapeCsv(value),
+                EscapeCsv(resolvedJobId));
 
-		await writer.WriteLineAsync(row);
-	    }
-	    await writer.FlushAsync();
+                await writer.WriteLineAsync(row);
+            }
+            await writer.FlushAsync();
             Console.WriteLine("[CsvExport]erfolgreich exportiert.");
             return filePath;
         }

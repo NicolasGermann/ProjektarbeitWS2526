@@ -46,6 +46,7 @@ namespace HTW.Influx.Extention
                             })
 			    .TryBind(dp =>
 			    {
+                                //Schreiben der CSV-Dateien.
                                 Directory.CreateDirectory("/logs");
                                 File.AppendAllText($"/logs/{pr.lastJobId ?? "NoID"}.txt", dp.ToLineProtocol());
                                 File.AppendAllText($"/logs/{pr.lastJobId ?? "NoID"}.txt", "\n");

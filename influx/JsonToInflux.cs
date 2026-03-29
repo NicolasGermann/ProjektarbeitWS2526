@@ -1,6 +1,7 @@
 using InfluxDB.Client.Writes;
 using System.Text.Json;
 using HTW.Printer;
+using HTW.Influx.Export;
 
 namespace HTW.Influx.DataConverter
 {
@@ -29,25 +30,38 @@ namespace HTW.Influx.DataConverter
             {
                 var (type, value) = ParseValue(e.Value.ToString()!);
                 pointData = pointData.Field(e.Key, value);
+                var sValue = Convert.ToString(value);
                 switch (e.Key)
                 {
                     case "url":
-                        pr.CurrentThreeMfUrl = Convert.ToString(value);
+                        pr.CurrentThreeMfUrl = sValue;
+                        Task.Run(async () =>
+                        {
+                            try
+                            {
+                                using var client = new HttpClient();
+                                byte[] fileBytes = await client.GetByteArrayAsync(sValue);
+                                await File.WriteAllBytesAsync($"/logs/{pr.lastJobId}.3mf", fileBytes);
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine($"[Error]({DateTime.UtcNow}:3MF {e})");
+                            }
+                        }).WaitAsync(TimeSpan.FromSeconds(30));
                         break;
                     case "subtask_id":
-                        pointData.Tag("subtask_id", $"{Convert.ToString(value)}");
+                        pointData.Tag("subtask_id", sValue);
                         break;
                     case "job_id":
-                        pointData.Tag("job_id", $"{Convert.ToString(value)}");
-                        pr.lastJobId = Convert.ToString(value);
+                        pointData.Tag("job_id", sValue);
+                        pr.lastJobId = sValue;
                         break;
                     case "gcode_state":
-                        if ($"{Convert.ToString(value)}" != pr.gCodeState && $"{Convert.ToString(value)}" == "FINISH")
+                        if (sValue != pr.gCodeState && sValue == "FINISH")
                         {
-                            pr.gCodeState = $"{value}";
-                            if (pr.CsvThread!.IsAlive) break;
-                            pr.CsvThread!.Start();
+                            pr.ExportThread!.Value.Item2.Append(pr.lastJobId);
                         }
+                        pr.gCodeState = sValue;
                         break;
                 }
             }
