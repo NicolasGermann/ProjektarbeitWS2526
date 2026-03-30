@@ -33,19 +33,13 @@ namespace HTW.Influx.DataConverter
                 Result<KeyValuePair<string, object>>.Some(e).TryBind(e =>
                 {
                     var (type, value) = ParseValue(e.Value.ToString()!);
-		    switch (e.Key){
-			case String s when s.Contains("target"):
-                            break;
-                        default:
 			    pointData = pointData.Field(e.Key, value);
-                            break;
-                    }
                     return e;
                 })
             .TryBind(e =>
             {
                 var (type, value) = ParseValue(e.Value.ToString()!);
-                var sValue = Convert.ToString(value);
+                var sValue = new string(Convert.ToString(value)!.Where(c => !char.IsControl(c) || c == '\n').ToArray());
                 switch (e.Key)
                 {
                     case "url":
