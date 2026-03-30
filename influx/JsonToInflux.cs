@@ -3,6 +3,7 @@ using System.Text.Json;
 using HTW.Printer;
 using HTW.Influx.Export;
 using HTW.Images;
+using HTW.Result;
 
 namespace HTW.Influx.DataConverter
 {
@@ -29,31 +30,37 @@ namespace HTW.Influx.DataConverter
 
             foreach (var e in dict)
             {
-                var (type, value) = ParseValue(e.Value.ToString()!);
-                pointData = pointData.Field(e.Key, value);
-                var sValue = Convert.ToString(value);
-                switch (e.Key)
+                Result<KeyValuePair<string, object>>.Some(e).TryBind(e =>
                 {
-                    case "url":
-			Console.WriteLine($"[DEBUG]({DateTime.UtcNow}): URL RECEIVED");
-                        Task.Run(async () => ThreeMfPreviewDownloader.DownloadThreeMF(pr.lastJobId!, pr.Name, sValue!)).WaitAsync(TimeSpan.FromMinutes(5));
-                        break;
-                    case "subtask_id":
-                        pointData = pointData.Tag("subtask_id", sValue);
-                        break;
-                    case "job_id":
-                        pointData = pointData.Tag("job_id", sValue);
-                        pr.lastJobId = sValue;
-                        break;
-                    case "gcode_state":
-                        if (sValue != pr.gCodeState && sValue == "FINISH")
-                        {
-                            Console.WriteLine($"[DEBUG]({DateTime.UtcNow}): PRINT FINISHED");
-                            Task.Run(async () => JobCsvExporter.moveFiles(pr.lastJobId!, pr.Name)).WaitAsync(TimeSpan.FromMinutes(5));
-                        }
-                        pr.gCodeState = sValue;
-                        break;
-                }
+                    var (type, value) = ParseValue(e.Value.ToString()!);
+                    pointData = pointData.Field(e.Key, value);
+                    var sValue = Convert.ToString(value);
+                    switch (e.Key)
+                    {
+                        case "url":
+                            Console.WriteLine($"[DEBUG]({DateTime.UtcNow}): URL RECEIVED");
+                            Task.Run(async () => ThreeMfPreviewDownloader.DownloadThreeMF(pr.lastJobId!, pr.Name, sValue!)).WaitAsync(TimeSpan.FromMinutes(5));
+                            break;
+                        case "subtask_id":
+                            pointData = pointData.Tag("subtask_id", sValue);
+                            break;
+                        case "job_id":
+                            pointData = pointData.Tag("job_id", sValue);
+                            pr.lastJobId = sValue;
+                            break;
+                        case "gcode_state":
+                            if (sValue != pr.gCodeState && sValue == "FINISH")
+                            {
+                                Console.WriteLine($"[DEBUG]({DateTime.UtcNow}): PRINT FINISHED");
+                                Task.Run(async () => JobCsvExporter.moveFiles(pr.lastJobId!, pr.Name)).WaitAsync(TimeSpan.FromMinutes(5));
+                            }
+                            pr.gCodeState = sValue;
+                            break;
+                    }
+                    return e;
+
+                })
+		    .CatchBind(ex => Console.WriteLine($"[Error]({DateTime.UtcNow}):JSON:{e.Key} {ex}"));
             }
             return pointData;
         }
