@@ -1,18 +1,3 @@
-//Copy an CSV File from tmp to an smb share thats mounted on the host
-
-/**
-try
-{
-    var copier = new CSVFileCopier("/tmp/export.csv");
-    var result = copier.Copy();
-
-    Console.WriteLine($"Erfolgreich kopiert: {result}");
-}
-catch (Exception ex)
-{
-    Console.Error.WriteLine($"CSV-Kopie fehlgeschlagen: {ex.Message}");
-}
-**/
 
 namespace HTW.IO
 {
