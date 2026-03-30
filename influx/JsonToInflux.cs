@@ -50,16 +50,17 @@ namespace HTW.Influx.DataConverter
                         }).WaitAsync(TimeSpan.FromSeconds(30));
                         break;
                     case "subtask_id":
-                        pointData.Tag("subtask_id", sValue);
+                        pointData = pointData.Tag("subtask_id", sValue);
                         break;
                     case "job_id":
-                        pointData.Tag("job_id", sValue);
+                        pointData = pointData.Tag("job_id", sValue);
                         pr.lastJobId = sValue;
                         break;
                     case "gcode_state":
                         if (sValue != pr.gCodeState && sValue == "FINISH")
                         {
-                            pr.ExportThread!.Value.Item2.Append(pr.lastJobId);
+                            Console.WriteLine($"[DEBUG]({DateTime.UtcNow}): PRINT FINISHED");
+                            Task.Run(async () => JobCsvExporter.moveFiles(pr.lastJobId!, pr.Name)).WaitAsync(TimeSpan.FromMinutes(5));
                         }
                         pr.gCodeState = sValue;
                         break;

@@ -22,7 +22,6 @@ namespace HTW.Printer
         public MqttConnector? connector { get; set; }
         public InfluxDBDTO? database { get; set; }
 	public Thread? CsvThread { get; set; }
-	public (Thread, IEnumerable<string>)? ExportThread { get; set; }
         public Func<MqttApplicationMessageReceivedEventArgs, Task> MessageFunction { get; set; } = t => Task.CompletedTask;
         public Queue<string> Messages { get; set; } = new Queue<string>();
     };

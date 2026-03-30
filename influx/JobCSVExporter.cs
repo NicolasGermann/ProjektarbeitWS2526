@@ -54,31 +54,28 @@ namespace HTW.Influx.Export
                                 }).WaitAsync(TimeSpan.FromSeconds(100));
         }
 
-        public static PrinterDTO createExportThread(PrinterDTO pr)
+        public static async Task moveFiles(string id, string Name)
         {
-            var queue = new Queue<string>();
-            var retThread = new Thread(async () =>
+            Thread.Sleep(TimeSpan.FromMinutes(1));
+            Directory.CreateDirectory($"/mnt/job-csv/{Name}/{id}/");
+            try
             {
-                while (true)
-                {
-                    Thread.Sleep(TimeSpan.FromMinutes(1));
-                    if (queue.Any())
-                    {
-                        try
-                        {
-                            var obj = queue.Dequeue();
-                            File.Move($"/logs/{obj}.csv", $"/mnt/job-csv/{pr.Name}/{obj}/{pr.Name}_{obj}.csv");
-                        }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine($"[Error]({DateTime.UtcNow}:mvFile {e})");
-                        }
-                    }
-                }
-            });
-            pr.ExportThread = (retThread, queue);
-            return pr;
+                File.Move($"/logs/{id}.csv", $"/mnt/job-csv/{Name}/{id}/{Name}_{id}.csv");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[Error]({DateTime.UtcNow}):MoveCSV {e}");
+            }
+            try
+            {
+                File.Move($"/logs/{id}.3mf", $"/mnt/job-csv/{Name}/{id}/{Name}_{id}.3mf");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[Error]({DateTime.UtcNow}):Move3mf {e}");
+            }
         }
+
 
         public static async Task<string> exportCSV(string bucket, string measurement, PrinterDTO printer, CancellationToken cancellationToken = default, string tempDirectory = "/tmp")
         {

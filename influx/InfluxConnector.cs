@@ -48,8 +48,8 @@ namespace HTW.Influx.Extention
 			    {
                                 //Schreiben der CSV-Dateien.
                                 Directory.CreateDirectory("/logs");
-                                File.AppendAllText($"/logs/{pr.lastJobId ?? "NoID"}.txt", dp.ToLineProtocol());
-                                File.AppendAllText($"/logs/{pr.lastJobId ?? "NoID"}.txt", "\n");
+                                File.AppendAllText($"/logs/{pr.lastJobId ?? "NoID"}.csv", dp.ToLineProtocol());
+                                File.AppendAllText($"/logs/{pr.lastJobId ?? "NoID"}.csv", "\n");
                                 return dp;
                             })
 			    .CatchBind(e =>
