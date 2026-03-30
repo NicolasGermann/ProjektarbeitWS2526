@@ -18,7 +18,7 @@ namespace HTW.Influx.DataConverter
             }
             catch
             {
-                throw new Exception($"[JsonToPoint]: Opjekt konnte nicht serialisiert werden {dict!.Select(t => $"{t.Key}, {t.Value}").ToArray().ToString()}");
+                throw new Exception($"[JsonToPoint]: Objekt konnte nicht serialisiert werden {dict!.Select(t => $"{t.Key}, {t.Value}").ToArray().ToString()}");
             }
             if (dict == null) throw (new Exception("Nachricht konnte nicht Serialisiert werden"));
             var output = string.Join(", ", dict.Select(kvp => $"{kvp.Key}={kvp.Value}"));
@@ -33,34 +33,45 @@ namespace HTW.Influx.DataConverter
                 Result<KeyValuePair<string, object>>.Some(e).TryBind(e =>
                 {
                     var (type, value) = ParseValue(e.Value.ToString()!);
-                    pointData = pointData.Field(e.Key, value);
-                    var sValue = Convert.ToString(value);
-                    switch (e.Key)
-                    {
-                        case "url":
-                            Console.WriteLine($"[DEBUG]({DateTime.UtcNow}): URL RECEIVED");
-                            Task.Run(async () => ThreeMfPreviewDownloader.DownloadThreeMF(pr.lastJobId!, pr.Name, sValue!)).WaitAsync(TimeSpan.FromMinutes(5));
+		    switch (e.Key){
+			case String s when s.Contains("target"):
                             break;
-                        case "subtask_id":
-                            pointData = pointData.Tag("subtask_id", sValue);
-                            break;
-                        case "job_id":
-                            pointData = pointData.Tag("job_id", sValue);
-                            pr.lastJobId = sValue;
-                            break;
-                        case "gcode_state":
-                            if (sValue != pr.gCodeState && sValue == "FINISH")
-                            {
-                                Console.WriteLine($"[DEBUG]({DateTime.UtcNow}): PRINT FINISHED");
-                                Task.Run(async () => JobCsvExporter.moveFiles(pr.lastJobId!, pr.Name)).WaitAsync(TimeSpan.FromMinutes(5));
-                            }
-                            pr.gCodeState = sValue;
+                        default:
+			    pointData = pointData.Field(e.Key, value);
                             break;
                     }
                     return e;
-
                 })
-		    .CatchBind(ex => Console.WriteLine($"[Error]({DateTime.UtcNow}):JSON:{e.Key} {ex}"));
+            .TryBind(e =>
+            {
+                var (type, value) = ParseValue(e.Value.ToString()!);
+                var sValue = Convert.ToString(value);
+                switch (e.Key)
+                {
+                    case "url":
+                        Console.WriteLine($"[DEBUG]({DateTime.UtcNow}): URL RECEIVED");
+                        Task.Run(async () => ThreeMfPreviewDownloader.DownloadThreeMF(pr.lastJobId!, pr.Name, sValue!)).WaitAsync(TimeSpan.FromMinutes(5));
+                        break;
+                    case "subtask_id":
+                        pointData = pointData.Tag("subtask_id", sValue);
+                        break;
+                    case "job_id":
+                        pointData = pointData.Tag("job_id", sValue);
+                        pr.lastJobId = sValue;
+                        break;
+                    case "gcode_state":
+                        if (sValue != pr.gCodeState && sValue == "FINISH")
+                        {
+                            Console.WriteLine($"[DEBUG]({DateTime.UtcNow}): PRINT FINISHED");
+                            Task.Run(async () => JobCsvExporter.moveFiles(pr.lastJobId!, pr.Name)).WaitAsync(TimeSpan.FromMinutes(5));
+                        }
+                        pr.gCodeState = sValue;
+                        break;
+                }
+                return e;
+
+            })
+            .CatchBind(ex => Console.WriteLine($"[Error]({DateTime.UtcNow}):JSON:{e.Key} {ex}"));
             }
             return pointData;
         }
