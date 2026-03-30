@@ -2,6 +2,7 @@ using InfluxDB.Client.Writes;
 using System.Text.Json;
 using HTW.Printer;
 using HTW.Influx.Export;
+using HTW.Images;
 
 namespace HTW.Influx.DataConverter
 {
@@ -34,20 +35,8 @@ namespace HTW.Influx.DataConverter
                 switch (e.Key)
                 {
                     case "url":
-                        pr.CurrentThreeMfUrl = sValue;
-                        Task.Run(async () =>
-                        {
-                            try
-                            {
-                                using var client = new HttpClient();
-                                byte[] fileBytes = await client.GetByteArrayAsync(sValue);
-                                await File.WriteAllBytesAsync($"/logs/{pr.lastJobId}.3mf", fileBytes);
-                            }
-                            catch (Exception e)
-                            {
-                                Console.WriteLine($"[Error]({DateTime.UtcNow}:3MF {e})");
-                            }
-                        }).WaitAsync(TimeSpan.FromSeconds(30));
+			Console.WriteLine($"[DEBUG]({DateTime.UtcNow}): URL RECEIVED");
+                        Task.Run(async () => ThreeMfPreviewDownloader.DownloadThreeMF(pr.lastJobId!, pr.Name, sValue!)).WaitAsync(TimeSpan.FromMinutes(5));
                         break;
                     case "subtask_id":
                         pointData = pointData.Tag("subtask_id", sValue);

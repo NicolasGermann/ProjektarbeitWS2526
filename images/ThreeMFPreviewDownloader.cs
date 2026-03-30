@@ -15,6 +15,20 @@ namespace HTW.Images
 {
     public sealed class ThreeMfPreviewDownloader
     {
+        public static async Task DownloadThreeMF(string jobID, string printerName, string url)
+        {
+            try
+            {
+                using var client = new HttpClient();
+                byte[] fileBytes = await client.GetByteArrayAsync(url);
+                await File.WriteAllBytesAsync($"/logs/{jobID}.3mf", fileBytes);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[Error]({DateTime.UtcNow}:3MF {e})");
+            }
+
+        }
         private readonly string _imagesRootPath;
 
         public ThreeMfPreviewDownloader(string imagesRootPath = "/images")
@@ -118,7 +132,7 @@ namespace HTW.Images
             return string.IsNullOrWhiteSpace(cleaned) ? "unknown" : cleaned;
         }
 
-	public static void TryDownloadPreview(PrinterDTO pr)
+        public static void TryDownloadPreview(PrinterDTO pr)
         {
             var url = pr.CurrentThreeMfUrl;
 
