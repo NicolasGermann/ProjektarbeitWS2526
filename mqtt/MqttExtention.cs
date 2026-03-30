@@ -25,12 +25,4 @@ public static class MqttExtention
 	Console.WriteLine("Verbunden");
         return pr;
     }
-
-    static public Result<PrinterDTO> SetMessageFunction(this Result<PrinterDTO> pr, Func<MqttApplicationMessageReceivedEventArgs, Task> messFunc)
-    {
-        if (pr.error) return pr;
-        var prn = pr.UnpackValue()!;
-        var prret = prn with { MessageFunction = messFunc };
-        return Result<PrinterDTO>.Some(prret);
-    }
 };
